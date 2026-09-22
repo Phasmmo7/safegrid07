@@ -13,7 +13,7 @@ export default function DashboardPage() {
               src="/images/safegrid-logo.svg"
               alt="SAFEGRID"
               width={40}
-              height={45}
+              height={54}
               className="rounded-lg"
             />
             <span className="text-xl font-bold">

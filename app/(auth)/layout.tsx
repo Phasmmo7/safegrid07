@@ -19,7 +19,7 @@ export default function AuthLayout({
               src="/images/safegrid-logo.svg"
               alt="SAFEGRID Logo"
               width={280}
-              height={315}
+              height={378}
               className="mx-auto"
               priority
             />
@@ -64,7 +64,7 @@ export default function AuthLayout({
               src="/images/safegrid-logo.svg"
               alt="SAFEGRID Logo"
               width={120}
-              height={135}
+              height={162}
               className="mx-auto mb-4"
               priority
             />
