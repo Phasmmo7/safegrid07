@@ -19,7 +19,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div>
+    <div className="p-8 rounded-2xl bg-card/50 border border-card-border backdrop-blur-sm">
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-2">Create your account</h2>
         <p className="text-muted">

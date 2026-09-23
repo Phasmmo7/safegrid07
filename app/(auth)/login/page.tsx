@@ -28,7 +28,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="p-8 rounded-2xl bg-card/50 border border-card-border backdrop-blur-sm">
       {/* Welcome Header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-2">Welcome back</h2>

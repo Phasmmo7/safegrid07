@@ -56,8 +56,14 @@ export default function AuthLayout({
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-background">
-        <div className="w-full max-w-md">
+      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-background bg-mesh-warm relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-orange/10" />
+
+        {/* Decorative Elements */}
+        <div className="absolute bottom-24 left-10 w-2 h-2 rounded-full bg-gold/20 animate-pulse" />
+        <div className="absolute top-16 right-8 w-1.5 h-1.5 rounded-full bg-orange/15" />
+
+        <div className="relative z-10 w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Image
