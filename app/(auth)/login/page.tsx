@@ -60,7 +60,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full pl-11 pr-4 py-3 rounded-xl bg-input-bg border border-input-border text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all"
+              className="w-full pl-11 pr-4 py-3 rounded-xl bg-input-bg border border-input-border text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-all"
             />
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              className="w-full pl-11 pr-12 py-3 rounded-xl bg-input-bg border border-input-border text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all"
+              className="w-full pl-11 pr-12 py-3 rounded-xl bg-input-bg border border-input-border text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-all"
             />
             <button
               type="button"
@@ -96,13 +96,13 @@ export default function LoginPage() {
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-input-border bg-input-bg text-primary focus:ring-primary/30"
+              className="w-4 h-4 rounded border-input-border bg-input-bg text-gold focus:ring-gold/30"
             />
             <span className="text-sm text-muted">Remember me</span>
           </label>
           <Link
             href="#"
-            className="text-sm text-primary hover:text-primary-hover transition-colors"
+            className="text-sm text-gold hover:text-gold-hover transition-colors"
           >
             Forgot password?
           </Link>
@@ -112,7 +112,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3.5 rounded-xl bg-primary text-background font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary-hover transition-all glow-primary-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3.5 rounded-xl bg-gold text-background font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gold-hover transition-all glow-warm-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -166,16 +166,16 @@ export default function LoginPage() {
         Don&apos;t have an account?{" "}
         <Link
           href="/signup"
-          className="text-primary hover:text-primary-hover font-medium transition-colors"
+          className="text-gold hover:text-gold-hover font-medium transition-colors"
         >
           Create one now
         </Link>
       </p>
 
       {/* Demo Credentials */}
-      <div className="mt-6 p-4 rounded-xl bg-primary-dim border border-primary/10">
+      <div className="mt-6 p-4 rounded-xl bg-gold-dim border border-gold/10">
         <p className="text-xs text-center text-muted">
-          <span className="text-primary font-medium">Demo:</span>{" "}
+          <span className="text-gold font-medium">Demo:</span>{" "}
           demo@safegrid.com / demo123
         </p>
       </div>

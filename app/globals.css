@@ -95,3 +95,33 @@ body {
 .animate-splash-in-delay {
   animation: splash-fade-in 0.8s ease-out 0.4s both;
 }
+
+/* Warm gold/orange background for splash screen */
+.bg-mesh-warm {
+  background-image:
+    radial-gradient(at 40% 20%, rgba(255, 179, 0, 0.10) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(255, 109, 0, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(255, 179, 0, 0.05) 0px, transparent 50%);
+}
+
+.glow-warm {
+  box-shadow: 0 0 20px rgba(255, 179, 0, 0.25), 0 0 60px rgba(255, 109, 0, 0.15);
+}
+
+.glow-warm-sm {
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.25);
+}
+
+:root {
+  --gold: #ffb300;
+  --gold-hover: #ffca28;
+  --gold-dim: #ffb30020;
+  --orange: #ff6d00;
+}
+
+@theme inline {
+  --color-gold: var(--gold);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-dim: var(--gold-dim);
+  --color-orange: var(--orange);
+}
