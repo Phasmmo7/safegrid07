@@ -20,7 +20,7 @@ export default function LoginPage() {
     await new Promise((r) => setTimeout(r, 1500));
 
     if (email === "demo@safegrid.com" && password === "demo123") {
-      window.location.href = "/dashboard";
+      window.location.href = "/onboarding/contacts";
     } else {
       setError("Invalid credentials. Try demo@safegrid.com / demo123");
       setIsLoading(false);

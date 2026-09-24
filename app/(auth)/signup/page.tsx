@@ -15,7 +15,7 @@ export default function SignupPage() {
     e.preventDefault();
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 1500));
-    window.location.href = "/dashboard";
+    window.location.href = "/onboarding/contacts";
   };
 
   return (
