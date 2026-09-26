@@ -1,5 +1,6 @@
 import { LngLat, lerpPath, pathDistanceKm } from "./geo";
 import { MAPBOX_TOKEN, MAPBOX_TOKEN_MISSING } from "./safegrid-store";
+import { PALETTE } from "./palette";
 
 export type RouteOption = {
   id: string;
@@ -31,7 +32,12 @@ export const DESTINATIONS: DestinationOption[] = [
 
 export const DEFAULT_ORIGIN: LngLat = [77.5946, 12.9716];
 
-const ROUTE_COLORS = ["#00c853", "#ffb300", "#38bdf8", "#ff6d00"];
+const ROUTE_COLORS = [
+  PALETTE.safe,
+  PALETTE.gold,
+  PALETTE.info,
+  PALETTE.orange,
+];
 
 export function hashString(s: string): number {
   let h = 2166136261;

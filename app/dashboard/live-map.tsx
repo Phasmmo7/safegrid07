@@ -13,6 +13,7 @@ import {
   MAPBOX_TOKEN,
   MAPBOX_TOKEN_MISSING,
 } from "../lib/safegrid-store";
+import { PALETTE } from "../lib/palette";
 
 const FALLBACK: [number, number] = [77.5946, 12.9716];
 
@@ -91,7 +92,7 @@ export default function LiveMap() {
         if (!cancelled) setStatus("error");
       });
 
-      marker = new mapboxgl.Marker({ color: "#ffb300" })
+      marker = new mapboxgl.Marker({ color: PALETTE.gold })
         .setLngLat(FALLBACK)
         .addTo(map);
 
@@ -129,7 +130,7 @@ export default function LiveMap() {
 
   if (status === "no-token") {
     return (
-      <div className="h-[420px] rounded-2xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
+      <div className="h-[420px] rounded-xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
         <div className="max-w-sm">
           <TriangleAlert className="w-8 h-8 text-gold mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Mapbox token missing</h3>
@@ -148,7 +149,7 @@ export default function LiveMap() {
 
   if (status === "error") {
     return (
-      <div className="h-[420px] rounded-2xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
+      <div className="h-[420px] rounded-xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
         <TriangleAlert className="w-8 h-8 text-danger mx-auto mb-3" />
         <p className="text-sm text-muted">
           Could not load the map. Check that your Mapbox token is valid and has
@@ -159,16 +160,16 @@ export default function LiveMap() {
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-card-border relative">
+    <div className="rounded-xl overflow-hidden border border-card-border relative">
       <div ref={containerRef} className="h-[420px] w-full bg-card" />
 
       {/* Overlay chip */}
       <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-card-border text-xs font-medium">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/85 backdrop-blur-sm border border-card-border text-xs font-medium">
           <MapPin className="w-3.5 h-3.5 text-gold" />
           Live Location
           {status === "ready" ? (
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
           ) : (
             <Loader2 className="w-3 h-3 text-muted animate-spin" />
           )}
@@ -205,8 +206,8 @@ export default function LiveMap() {
       )}
 
       {/* Style badge */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-card-border text-xs text-muted">
-        <Satellite className="w-3.5 h-3.5 text-primary" />
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/85 backdrop-blur-sm border border-card-border text-xs text-muted">
+        <Satellite className="w-3.5 h-3.5 text-gold" />
         Dark satellite streets · Mapbox
       </div>
     </div>

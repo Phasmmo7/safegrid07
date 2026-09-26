@@ -1,37 +1,48 @@
 @import "tailwindcss";
 
 :root {
+  /* Surfaces */
   --background: #0a0e17;
   --foreground: #e8eaed;
-  --primary: #00c853;
-  --primary-hover: #00e676;
-  --primary-dim: #00c85320;
+  --card: #111826;
+  --card-border: #1c2434;
+  --input-bg: #0d1420;
+  --input-border: #2a3446;
+  --muted: #7b8698;
+
+  /* The single brand accent: actions, links, icons, focus */
+  --gold: #ffb300;
+  --gold-hover: #ffca28;
+  --gold-dim: #ffb3001a;
+  --orange: #ff6d00;
+
+  /* Semantic status — green only ever means "safe" */
+  --safe: #00c853;
+  --safe-dim: #00c8531a;
   --danger: #ff1744;
   --warning: #ff9100;
-  --safe: #00c853;
-  --card: #111827;
-  --card-border: #1f2937;
-  --muted: #6b7280;
-  --input-bg: #1f2937;
-  --input-border: #374151;
+  --info: #38bdf8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
-  --color-primary-dim: var(--primary-dim);
-  --color-danger: var(--danger);
-  --color-warning: var(--warning);
-  --color-safe: var(--safe);
   --color-card: var(--card);
   --color-card-border: var(--card-border);
-  --color-muted: var(--muted);
   --color-input-bg: var(--input-bg);
   --color-input-border: var(--input-border);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-dim: var(--gold-dim);
+  --color-orange: var(--orange);
+  --color-safe: var(--safe);
+  --color-safe-dim: var(--safe-dim);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
 body {
@@ -40,88 +51,29 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Glow effect for primary elements */
-.glow-primary {
-  box-shadow: 0 0 20px rgba(0, 200, 83, 0.3), 0 0 60px rgba(0, 200, 83, 0.1);
-}
-
-.glow-primary-sm {
-  box-shadow: 0 0 10px rgba(0, 200, 83, 0.2);
-}
-
-/* Animated gradient background */
-.bg-mesh {
+/* Ambient page mesh — amber, low enough to read as depth not colour */
+.bg-mesh-warm {
   background-image:
-    radial-gradient(at 40% 20%, rgba(0, 200, 83, 0.08) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(0, 200, 83, 0.05) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(0, 200, 83, 0.03) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, rgba(255, 179, 0, 0.05) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(255, 179, 0, 0.04) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(255, 179, 0, 0.025) 0px, transparent 50%);
 }
 
-/* Pulse animation for SOS elements */
-@keyframes pulse-sos {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-pulse-sos {
-  animation: pulse-sos 2s ease-in-out infinite;
-}
-
-/* Shield float animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Splash screen entrance animations */
+/* Splash entrance */
 @keyframes splash-in {
-  0% { opacity: 0; transform: scale(0.85); }
+  0% { opacity: 0; transform: scale(0.92); }
   100% { opacity: 1; transform: scale(1); }
 }
 
 .animate-splash-in {
-  animation: splash-in 0.8s ease-out both;
+  animation: splash-in 0.7s ease-out both;
 }
 
 @keyframes splash-fade-in {
-  0% { opacity: 0; transform: translateY(10px); }
+  0% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0px); }
 }
 
 .animate-splash-in-delay {
-  animation: splash-fade-in 0.8s ease-out 0.4s both;
-}
-
-/* Warm gold/orange background for splash screen */
-.bg-mesh-warm {
-  background-image:
-    radial-gradient(at 40% 20%, rgba(255, 179, 0, 0.10) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(255, 109, 0, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(255, 179, 0, 0.05) 0px, transparent 50%);
-}
-
-.glow-warm {
-  box-shadow: 0 0 20px rgba(255, 179, 0, 0.25), 0 0 60px rgba(255, 109, 0, 0.15);
-}
-
-.glow-warm-sm {
-  box-shadow: 0 0 14px rgba(255, 179, 0, 0.25);
-}
-
-:root {
-  --gold: #ffb300;
-  --gold-hover: #ffca28;
-  --gold-dim: #ffb30020;
-  --orange: #ff6d00;
-}
-
-@theme inline {
-  --color-gold: var(--gold);
-  --color-gold-hover: var(--gold-hover);
-  --color-gold-dim: var(--gold-dim);
-  --color-orange: var(--orange);
+  animation: splash-fade-in 0.7s ease-out 0.35s both;
 }

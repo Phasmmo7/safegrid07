@@ -11,6 +11,7 @@ import {
   Globe,
 } from "lucide-react";
 import { loadLocation, saveLocation } from "../../../lib/safegrid-store";
+import { Button, Card, Pill } from "@/app/components/ui";
 
 type Status = "idle" | "requesting" | "granted" | "denied";
 
@@ -62,22 +63,24 @@ export default function OnboardingLocationPage() {
 
   if (loading) {
     return (
-      <div className="p-8 rounded-2xl bg-card/50 border border-card-border flex items-center justify-center py-16">
+      <Card glass className="flex items-center justify-center py-16">
         <Loader2 className="w-8 h-8 text-gold animate-spin" />
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="p-8 rounded-2xl bg-card/50 border border-card-border backdrop-blur-sm">
+    <Card glass className="p-8">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-dim border border-gold/20 text-xs text-gold font-medium">
+          <Pill>
             <Locate className="w-3.5 h-3.5" /> Step 2 of 2
-          </span>
+          </Pill>
         </div>
-        <h2 className="text-3xl font-bold mb-2">Enable live location</h2>
+        <h2 className="text-3xl font-bold mb-2 tracking-tight">
+          Enable live location
+        </h2>
         <p className="text-muted">
           SAFEGRID needs your location to show you on the safety map and share a
           live position with your safety net during an SOS.
@@ -85,9 +88,9 @@ export default function OnboardingLocationPage() {
       </div>
 
       {/* Permission Illustration */}
-      <div className="mb-8 rounded-2xl bg-gold-dim border border-gold/20 p-6 text-center">
+      <div className="mb-8 rounded-xl bg-gold-dim border border-gold/20 p-6 text-center">
         <div className="relative mx-auto mb-4 w-24 h-24">
-          <div className="absolute inset-0 rounded-full bg-gold/10 animate-pulse-sos" />
+          <div className="absolute inset-0 rounded-full bg-gold/10 animate-pulse" />
           <div className="absolute inset-4 rounded-full bg-gold/15 animate-pulse" />
           <div className="absolute inset-0 flex items-center justify-center">
             <Crosshair className="w-10 h-10 text-gold" />
@@ -102,14 +105,14 @@ export default function OnboardingLocationPage() {
 
       {/* Status Message */}
       {status === "requesting" && (
-        <div className="mb-6 p-4 rounded-xl bg-primary-dim border border-primary/20 text-sm text-muted flex items-center gap-3">
-          <Loader2 className="w-4 h-4 text-primary animate-spin" />
+        <div className="mb-6 p-4 rounded-xl bg-gold-dim border border-gold/20 text-sm text-muted flex items-center gap-3">
+          <Loader2 className="w-4 h-4 text-gold animate-spin" />
           Waiting for you to allow location access in the browser prompt…
         </div>
       )}
 
       {status === "granted" && coords && (
-        <div className="mb-6 p-4 rounded-xl bg-primary-dim border border-primary/20 text-sm flex items-center gap-3">
+        <div className="mb-6 p-4 rounded-xl bg-safe-dim border border-safe/20 text-sm flex items-center gap-3">
           <ShieldCheck className="w-5 h-5 text-safe shrink-0" />
           <span className="text-muted">
             Location enabled at{" "}
@@ -133,15 +136,13 @@ export default function OnboardingLocationPage() {
 
       {/* Actions */}
       <div className="space-y-3">
-        <button
+        <Button
           type="button"
           onClick={requestLocation}
-          disabled={status === "requesting"}
-          className="w-full py-3.5 rounded-xl bg-gold text-background font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gold-hover transition-all glow-warm-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          block
+          loading={status === "requesting"}
         >
-          {status === "requesting" ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : status === "granted" ? (
+          {status === "granted" ? (
             <>
               Access Enabled <ShieldCheck className="w-4 h-4" />
             </>
@@ -150,16 +151,18 @@ export default function OnboardingLocationPage() {
               <Locate className="w-4 h-4" /> Allow Location Access
             </>
           )}
-        </button>
+        </Button>
 
         {status !== "granted" && (
-          <button
+          <Button
             type="button"
+            variant="quiet"
+            block
+            className="py-3"
             onClick={continueAnyway}
-            className="w-full py-3 rounded-xl bg-card border border-card-border text-muted text-sm hover:text-foreground hover:border-primary/30 transition-all"
           >
             Continue without location
-          </button>
+          </Button>
         )}
       </div>
 
@@ -167,6 +170,6 @@ export default function OnboardingLocationPage() {
         <Globe className="w-3.5 h-3.5" />
         Used only while you&apos;re on an active Safe Journey or SOS.
       </p>
-    </div>
+    </Card>
   );
 }

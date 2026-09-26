@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Button, Card, Input } from "@/app/components/ui";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -28,70 +29,72 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="p-8 rounded-2xl bg-card/50 border border-card-border backdrop-blur-sm">
-      {/* Welcome Header */}
+    <Card glass className="p-8">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Welcome back</h2>
+        <h2 className="text-3xl font-bold mb-2 tracking-tight">
+          Welcome back
+        </h2>
         <p className="text-muted">
           Sign in to access your safety dashboard
         </p>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="mb-6 p-4 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
           {error}
         </div>
       )}
 
-      {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Email Field */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2 text-muted">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium mb-2 text-muted"
+          >
             Email address
           </label>
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              className="w-full pl-11 pr-4 py-3 rounded-xl bg-input-bg border border-input-border text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-all"
-            />
-          </div>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            icon={<Mail className="w-5 h-5" />}
+          />
         </div>
 
-        {/* Password Field */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2 text-muted">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium mb-2 text-muted"
+          >
             Password
           </label>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-              className="w-full pl-11 pr-12 py-3 rounded-xl bg-input-bg border border-input-border text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-all"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          </div>
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            required
+            icon={<Lock className="w-5 h-5" />}
+            trailing={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            }
+          />
         </div>
 
-        {/* Remember & Forgot */}
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -108,38 +111,22 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Sign In Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-3.5 rounded-xl bg-gold text-background font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gold-hover transition-all glow-warm-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <>
-              Sign In
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
+        <Button type="submit" block loading={isLoading}>
+          Sign In
+          <ArrowRight className="w-4 h-4" />
+        </Button>
       </form>
 
-      {/* Divider */}
       <div className="relative my-8">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-card-border" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-background text-muted">or continue with</span>
+          <span className="px-4 text-muted">or continue with</span>
         </div>
       </div>
 
-      {/* Google Sign In */}
-      <button
-        type="button"
-        className="w-full py-3.5 rounded-xl bg-card border border-card-border text-foreground font-medium text-sm flex items-center justify-center gap-3 hover:bg-card-border/50 transition-all"
-      >
+      <Button type="button" variant="ghost" block className="gap-3">
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -159,9 +146,8 @@ export default function LoginPage() {
           />
         </svg>
         Sign in with Google
-      </button>
+      </Button>
 
-      {/* Sign Up Link */}
       <p className="text-center text-sm text-muted mt-8">
         Don&apos;t have an account?{" "}
         <Link
@@ -172,13 +158,12 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      {/* Demo Credentials */}
-      <div className="mt-6 p-4 rounded-xl bg-gold-dim border border-gold/10">
+      <div className="mt-6 p-4 rounded-lg bg-gold-dim border border-gold/20">
         <p className="text-xs text-center text-muted">
           <span className="text-gold font-medium">Demo:</span>{" "}
           demo@safegrid.com / demo123
         </p>
       </div>
-    </div>
+    </Card>
   );
 }

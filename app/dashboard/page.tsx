@@ -14,11 +14,17 @@ import {
   Users,
   LogOut,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import LiveMap from "./live-map";
 import SetupGuard from "./setup-guard";
 import TrustedNetwork from "./trusted-network";
+import SiteHeader from "@/app/components/site-header";
+import {
+  ButtonLink,
+  Card,
+  SectionHeading,
+  StatusStrip,
+} from "@/app/components/ui";
 
 const stats = [
   {
@@ -34,8 +40,8 @@ const stats = [
     label: "Protection network",
     value: "5",
     sub: "active contacts",
-    accent: "text-primary",
-    tint: "bg-primary-dim border-primary/20",
+    accent: "text-gold",
+    tint: "bg-gold-dim border-gold/20",
   },
   {
     icon: ShieldCheck,
@@ -43,7 +49,7 @@ const stats = [
     value: "3",
     sub: "last 30 days",
     accent: "text-safe",
-    tint: "bg-primary-dim border-primary/20",
+    tint: "bg-safe-dim border-safe/20",
   },
   {
     icon: HeartPulse,
@@ -63,18 +69,18 @@ const quickActions = [
     href: "/journey",
     primary: true,
   },
-  { icon: Map, label: "Safety Map", desc: "View risk zones", href: "/map" },
+  { icon: Map, label: "Safety Map", desc: "View risk zones", href: "#live-map" },
   {
     icon: Users,
     label: "Emergency Contacts",
     desc: "Manage your circle",
-    href: "/contacts",
+    href: "#trusted-network",
   },
   {
     icon: Shield,
     label: "Command Center",
     desc: "Monitor incidents",
-    href: "/command-center",
+    href: "/journey",
   },
 ];
 
@@ -117,55 +123,34 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background bg-mesh-warm relative overflow-hidden">
       <SetupGuard />
 
-      {/* Decorative Elements */}
-      <div className="absolute top-24 right-16 w-2 h-2 rounded-full bg-gold/30 animate-pulse" />
-      <div className="absolute bottom-40 left-10 w-3 h-3 rounded-full bg-orange/20 animate-pulse-sos" />
-
-      {/* Header */}
-      <header className="relative z-10 border-b border-card-border px-6 py-4 bg-background/70 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/images/safegrid-logo.svg"
-              alt="SAFEGRID"
-              width={40}
-              height={54}
-              className="rounded-lg"
-            />
-            <span className="text-xl font-bold">
-              SAFE<span className="text-primary">GRID</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:block px-3 py-1.5 rounded-full bg-primary-dim border border-primary/20 text-xs text-primary font-medium">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse mr-1.5 align-middle" />
-              Monitoring Active
-            </div>
-            <span className="text-sm text-muted hidden md:block">
-              Welcome, Demo User
-            </span>
-            <Link
-              href="/login"
-              className="p-2 rounded-lg hover:bg-card transition-colors text-muted hover:text-foreground"
-              title="Log out"
-            >
-              <LogOut className="w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader>
+        <span className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-safe-dim border border-safe/20 text-xs text-safe font-medium">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
+          Monitoring Active
+        </span>
+        <span className="text-sm text-muted hidden md:block">
+          Welcome, Demo User
+        </span>
+        <Link
+          href="/login"
+          className="p-2 rounded-lg hover:bg-card transition-colors text-muted hover:text-foreground"
+          title="Log out"
+        >
+          <LogOut className="w-5 h-5" />
+        </Link>
+      </SiteHeader>
 
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         {/* Safety Status Hero */}
-        <div className="mb-8 p-6 rounded-2xl bg-card border border-card-border bg-card/60 backdrop-blur-sm">
+        <Card className="mb-8 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-5 justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-safe/10 border border-safe/20 flex items-center justify-center glow-primary-sm">
+              <div className="w-16 h-16 rounded-xl bg-safe/10 border border-safe/20 flex items-center justify-center">
                 <Shield className="w-8 h-8 text-safe" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold mb-1">
+                <h1 className="text-2xl font-bold mb-1 tracking-tight">
                   You&apos;re Safe
                   <span className="ml-3 align-middle inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-safe/10 border border-safe/20 text-xs text-safe font-medium">
                     <MapPin className="w-3 h-3" /> Bengaluru, IN
@@ -176,53 +161,52 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <Link
+            <ButtonLink
               href="/journey"
-              className="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold text-background font-semibold text-sm hover:bg-gold-hover transition-all glow-warm-sm"
+              className="shrink-0 px-6 py-3"
             >
               <Navigation className="w-4 h-4" />
               Start Safe Journey
-            </Link>
+            </ButtonLink>
           </div>
-        </div>
+        </Card>
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="p-5 rounded-xl bg-card border border-card-border"
-            >
+            <Card key={stat.label} className="p-5">
               <div
                 className={`w-10 h-10 rounded-xl border flex items-center justify-center mb-3 ${stat.tint}`}
               >
                 <stat.icon className={`w-5 h-5 ${stat.accent}`} />
               </div>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold font-mono">{stat.value}</div>
               <div className="text-sm font-medium text-foreground">
                 {stat.label}
               </div>
               <div className="text-xs text-muted">{stat.sub}</div>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Live Location Map */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-gold" /> Live Location
-            </h2>
-            <span className="text-xs text-muted flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Tracking active
-            </span>
-          </div>
+        <div className="mb-8" id="live-map">
+          <SectionHeading
+            icon={<MapPin className="w-5 h-5" />}
+            action={
+              <span className="text-xs text-muted flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
+                Tracking active
+              </span>
+            }
+          >
+            Live Location
+          </SectionHeading>
           <LiveMap />
         </div>
 
         {/* Quick Actions */}
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+        <SectionHeading>Quick Actions</SectionHeading>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {quickActions.map((action) => (
             <Link
@@ -231,14 +215,10 @@ export default function DashboardPage() {
               className={`p-5 rounded-xl border transition-all group relative overflow-hidden ${
                 action.primary
                   ? "bg-gold-dim border-gold/30 hover:border-gold/60"
-                  : "bg-card border-card-border hover:border-primary/30"
+                  : "bg-card border-card-border hover:border-gold/40"
               }`}
             >
-              <action.icon
-                className={`w-6 h-6 mb-3 group-hover:scale-110 transition-transform ${
-                  action.primary ? "text-gold" : "text-primary"
-                }`}
-              />
+              <action.icon className="w-6 h-6 mb-3 text-gold group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold mb-1">{action.label}</h3>
               <p className="text-sm text-muted">{action.desc}</p>
               <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 transition-all" />
@@ -247,36 +227,35 @@ export default function DashboardPage() {
         </div>
 
         {/* Voice SOS Status */}
-        <div className="p-4 rounded-xl bg-primary-dim border border-primary/10 flex items-center gap-3 mb-8">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm text-muted">
-            Voice SOS: <span className="text-primary font-medium">Active</span>{" "}
-            — Say &quot;SAFEGRID SOS&quot; to trigger emergency
-          </span>
-        </div>
+        <StatusStrip className="mb-8">
+          Voice SOS: <span className="text-safe font-medium">Active</span> —
+          Say &quot;SAFEGRID SOS&quot; to trigger emergency
+        </StatusStrip>
 
         {/* Recent Journeys + Safety Tips */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Recent Journeys */}
-          <div className="p-5 rounded-2xl bg-card border border-card-border">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Clock className="w-5 h-5 text-gold" /> Recent Journeys
-              </h2>
-              <span className="text-xs text-muted flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-safe" /> All safe
-              </span>
-            </div>
+          <Card className="p-5">
+            <SectionHeading
+              icon={<Clock className="w-5 h-5" />}
+              action={
+                <span className="text-xs text-muted flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-safe" /> All safe
+                </span>
+              }
+            >
+              Recent Journeys
+            </SectionHeading>
             <ul className="space-y-3">
               {recentJourneys.map((journey) => (
                 <li
                   key={journey.to}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-background border border-card-border"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-background border border-card-border"
                 >
                   <div className="flex flex-col items-center gap-1 px-1">
                     <div className="w-2 h-2 rounded-full bg-gold" />
                     <div className="w-px h-4 bg-card-border" />
-                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <div className="w-2 h-2 rounded-full bg-safe" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -288,7 +267,7 @@ export default function DashboardPage() {
                       {journey.date} · {journey.duration}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs text-safe font-medium bg-primary-dim border border-primary/20 px-2.5 py-1 rounded-full">
+                  <span className="shrink-0 text-xs text-safe font-medium bg-safe-dim border border-safe/20 px-2.5 py-1 rounded-full">
                     {journey.status}
                   </span>
                 </li>
@@ -300,49 +279,53 @@ export default function DashboardPage() {
             >
               View all journeys <ChevronRight className="w-4 h-4" />
             </Link>
-          </div>
+          </Card>
 
           {/* Safety Tips */}
-          <div className="p-5 rounded-2xl bg-card border border-card-border">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Award className="w-5 h-5 text-gold" /> Safety Tips
-            </h2>
+          <Card className="p-5">
+            <SectionHeading icon={<Award className="w-5 h-5" />}>
+              Safety Tips
+            </SectionHeading>
             <ul className="space-y-3">
               {tips.map((tip, index) => (
                 <li
                   key={tip}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-background border border-card-border"
+                  className="flex items-start gap-3 p-3 rounded-lg bg-background border border-card-border"
                 >
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-gold-dim border border-gold/20 text-gold text-xs font-semibold flex items-center justify-center">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-gold-dim border border-gold/25 text-gold text-xs font-semibold flex items-center justify-center">
                     {index + 1}
                   </span>
                   <p className="text-sm text-muted leading-relaxed">{tip}</p>
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
         </div>
 
         {/* Emergency Contacts Preview */}
-        <div className="mt-4 p-5 rounded-2xl bg-card border border-card-border">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Phone className="w-5 h-5 text-primary" /> Trusted Network
-            </h2>
-            <Link
-              href="/contacts"
-              className="inline-flex items-center gap-1 text-sm text-gold hover:text-gold-hover transition-colors"
+        <div className="mt-4" id="trusted-network">
+          <Card className="p-5">
+            <SectionHeading
+              icon={<Phone className="w-5 h-5" />}
+              action={
+                <Link
+                  href="/onboarding/contacts"
+                  className="inline-flex items-center gap-1 text-sm text-gold hover:text-gold-hover transition-colors"
+                >
+                  Manage <ChevronRight className="w-4 h-4" />
+                </Link>
+              }
             >
-              Manage <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <TrustedNetwork />
-          </div>
+              Trusted Network
+            </SectionHeading>
+            <div className="grid grid-cols-1 gap-3">
+              <TrustedNetwork />
+            </div>
+          </Card>
         </div>
 
         {/* Live Monitoring Bar */}
-        <div className="mt-4 p-4 rounded-xl bg-gold-dim border border-gold/10 flex items-center gap-3">
+        <div className="mt-4 p-4 rounded-xl bg-gold-dim border border-gold/20 flex items-center gap-3">
           <Activity className="w-4 h-4 text-gold" />
           <span className="text-sm text-muted">
             Live ambient monitoring: location, speed and audio anomalies are

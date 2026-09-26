@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   CircleCheck,
   Flag,
-  Loader2,
   LocateFixed,
   MapPin,
   Navigation,
@@ -19,6 +17,8 @@ import {
 import JourneyMap from "./journey-map";
 import { DEFAULT_ORIGIN, DESTINATIONS, getJourneyRoutes, recommendBetterRoute, RouteOption } from "../lib/routes";
 import { loadLocation } from "../lib/safegrid-store";
+import SiteHeader from "@/app/components/site-header";
+import { Button, Card, Pill, StatusStrip } from "@/app/components/ui";
 
 type Phase = "setup" | "loading" | "active";
 
@@ -108,29 +108,14 @@ export default function JourneyPage() {
 
   return (
     <div className="min-h-screen bg-background bg-mesh-warm relative overflow-hidden">
-      {/* Header */}
-      <header className="relative z-10 border-b border-card-border px-6 py-4 bg-background/70 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <Image
-              src="/images/safegrid-logo.svg"
-              alt="SAFEGRID"
-              width={40}
-              height={54}
-              className="rounded-lg"
-            />
-            <span className="text-xl font-bold">
-              SAFE<span className="text-primary">GRID</span>
-            </span>
-          </Link>
-          <Link
-            href="/dashboard"
-            className="text-sm text-muted hover:text-foreground transition-colors"
-          >
-            ← Back to dashboard
-          </Link>
-        </div>
-      </header>
+      <SiteHeader>
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted hover:text-foreground transition-colors"
+        >
+          ← Back to dashboard
+        </Link>
+      </SiteHeader>
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold mb-1">Safe Journey</h1>
@@ -143,10 +128,10 @@ export default function JourneyPage() {
           {/* Left: controls */}
           <div className="space-y-4">
             {/* Setup card */}
-            <div className="p-5 rounded-2xl bg-card border border-card-border">
+            <Card className="p-5">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-primary-dim border border-primary/20 flex items-center justify-center">
-                  <LocateFixed className="w-5 h-5 text-safe" />
+                <div className="w-10 h-10 rounded-xl bg-gold-dim border border-gold/25 flex items-center justify-center">
+                  <LocateFixed className="w-5 h-5 text-gold" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-xs text-muted">From</div>
@@ -176,44 +161,39 @@ export default function JourneyPage() {
               </div>
 
               {phase !== "active" ? (
-                <button
+                <Button
                   type="button"
                   onClick={handleStart}
-                  disabled={phase === "loading"}
-                  className="w-full py-3.5 rounded-xl bg-gold text-background font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gold-hover transition-all glow-warm-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  block
+                  loading={phase === "loading"}
                 >
-                  {phase === "loading" ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Navigation className="w-4 h-4" /> Start Journey
-                    </>
-                  )}
-                </button>
+                  <Navigation className="w-4 h-4" /> Start Journey
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
+                  variant="danger"
+                  block
                   onClick={handleStop}
-                  className="w-full py-3.5 rounded-xl bg-danger/15 border border-danger/30 text-danger font-semibold text-sm flex items-center justify-center gap-2 hover:bg-danger/25 transition-all"
                 >
                   End Journey
-                </button>
+                </Button>
               )}
-            </div>
+            </Card>
 
             {/* Active journey status */}
             {phase === "active" && activeRoute && (
               <>
                 {/* Current route */}
-                <div className="p-5 rounded-2xl bg-card border border-card-border">
+                <Card className="p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="font-semibold flex items-center gap-2 text-sm">
                       <Route className="w-4 h-4 text-gold" /> Current route
                     </h2>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-dim border border-primary/20 text-xs text-safe font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <Pill tone="safe" className="px-2.5 py-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
                       Live
-                    </span>
+                    </Pill>
                   </div>
 
                   <div className="font-medium">{activeRoute.name}</div>
@@ -241,7 +221,7 @@ export default function JourneyPage() {
                         </div>
                         <div className="h-2 rounded-full bg-card overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-orange via-gold to-primary transition-all duration-700"
+                            className="h-full rounded-full bg-gradient-to-r from-orange via-gold to-safe transition-all duration-700"
                             style={{ width: `${activeRoute.crowdScore}%` }}
                           />
                         </div>
@@ -250,14 +230,16 @@ export default function JourneyPage() {
                   </div>
 
                   {/* Better route CTA */}
-                  <button
+                  <Button
                     type="button"
+                    variant="tinted"
+                    block
+                    className="py-3"
                     onClick={handleBetterRoute}
-                    className="w-full py-3 rounded-xl bg-primary-dim border border-primary/30 text-primary font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/15 transition-all"
                   >
                     <RefreshCw className="w-4 h-4" />
                     Find better route — more people
-                  </button>
+                  </Button>
 
                   {notice && (
                     <p className="mt-3 text-xs text-muted flex items-start gap-2">
@@ -272,10 +254,10 @@ export default function JourneyPage() {
                       this route
                     </p>
                   )}
-                </div>
+                </Card>
 
                 {/* Alternatives */}
-                <div className="p-5 rounded-2xl bg-card border border-card-border">
+                <Card className="p-5">
                   <h2 className="font-semibold text-sm mb-3 flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-gold" /> Alternative routes
                   </h2>
@@ -296,10 +278,10 @@ export default function JourneyPage() {
                                 : `Showing ${route.name}. Ask for a better route to compare crowd density.`,
                             );
                           }}
-                          className={`w-full flex items-center justify-between gap-3 p-3 rounded-xl border text-left transition-all ${
+                          className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border text-left transition-all ${
                             isActive
-                              ? "bg-primary-dim border-primary/30"
-                              : "bg-background border-card-border hover:border-primary/30"
+                              ? "bg-gold-dim border-gold/40"
+                              : "bg-background border-card-border hover:border-gold/40"
                           }`}
                         >
                           <div className="min-w-0">
@@ -320,7 +302,7 @@ export default function JourneyPage() {
                       );
                     })}
                   </div>
-                </div>
+                </Card>
               </>
             )}
           </div>
@@ -338,13 +320,10 @@ export default function JourneyPage() {
         </div>
 
         {/* Voice SOS */}
-        <div className="mt-8 p-4 rounded-xl bg-primary-dim border border-primary/10 flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm text-muted">
-            Voice SOS: <span className="text-primary font-medium">Active</span>{" "}
-            — Say &quot;SAFEGRID SOS&quot; to trigger emergency
-          </span>
-        </div>
+        <StatusStrip className="mt-8">
+          Voice SOS: <span className="text-safe font-medium">Active</span> —
+          Say &quot;SAFEGRID SOS&quot; to trigger emergency
+        </StatusStrip>
 
         {originLabel !== "Your live location" && (
           <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/20 text-sm text-muted flex items-start gap-3">

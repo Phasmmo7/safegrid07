@@ -10,6 +10,7 @@ import {
 import { positionAlongPath } from "../lib/geo";
 import type { LngLat } from "../lib/geo";
 import type { RouteOption } from "../lib/routes";
+import { PALETTE, hexToRgba } from "../lib/palette";
 
 type JourneyMapProps = {
   routes: RouteOption[];
@@ -96,8 +97,9 @@ export default function JourneyMap({
       el.style.height = `${size}px`;
       el.style.borderRadius = "9999px";
       el.style.background = color;
-      el.style.border = "3px solid #0a0e17";
-      if (glow) el.style.boxShadow = `0 0 0 5px rgba(255,179,0,0.25), 0 0 16px ${glow}`;
+      el.style.border = `3px solid ${PALETTE.background}`;
+      if (glow)
+        el.style.boxShadow = `0 0 0 5px ${hexToRgba(PALETTE.gold, 0.25)}, 0 0 16px ${glow}`;
       return el;
     };
 
@@ -133,7 +135,7 @@ export default function JourneyMap({
           source: "routes",
           layout: { "line-cap": "round", "line-join": "round" },
           paint: {
-            "line-color": "#0a0e17",
+            "line-color": PALETTE.background,
             "line-width": 12,
             "line-opacity": 0.9,
           },
@@ -145,7 +147,7 @@ export default function JourneyMap({
           filter: ["==", ["get", "active"], 1],
           layout: { "line-cap": "round", "line-join": "round" },
           paint: {
-            "line-color": "#ffb300",
+            "line-color": PALETTE.gold,
             "line-width": 16,
             "line-opacity": 0.22,
           },
@@ -162,14 +164,18 @@ export default function JourneyMap({
           },
         });
 
-        fromDotRef.current = new mapboxgl.Marker({ element: makeDot(16, "#00c853") })
+        fromDotRef.current = new mapboxgl.Marker({
+          element: makeDot(16, PALETTE.safe),
+        })
           .setLngLat(from)
           .addTo(map);
-        toDotRef.current = new mapboxgl.Marker({ element: makeDot(16, "#ff6d00") })
+        toDotRef.current = new mapboxgl.Marker({
+          element: makeDot(16, PALETTE.orange),
+        })
           .setLngLat(to)
           .addTo(map);
         dotRef.current = new mapboxgl.Marker({
-          element: makeDot(18, "#ffb300", "rgba(255,179,0,0.8)"),
+          element: makeDot(18, PALETTE.gold, hexToRgba(PALETTE.gold, 0.8)),
         })
           .setLngLat(from)
           .addTo(map);
@@ -209,7 +215,7 @@ export default function JourneyMap({
 
   if (MAPBOX_TOKEN_MISSING) {
     return (
-      <div className="h-full min-h-[420px] rounded-2xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
+      <div className="h-full min-h-[420px] rounded-xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
         <div className="max-w-sm">
           <TriangleAlert className="w-8 h-8 text-gold mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Mapbox token missing</h3>
@@ -230,7 +236,7 @@ export default function JourneyMap({
     <div className="relative h-full min-h-[420px]">
       <div
         ref={containerRef}
-        className="h-full min-h-[420px] w-full rounded-2xl overflow-hidden border border-card-border"
+        className="h-full min-h-[420px] w-full rounded-xl overflow-hidden border border-card-border"
       />
       {routes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

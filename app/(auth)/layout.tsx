@@ -10,11 +10,10 @@ export default function AuthLayout({
     <div className="min-h-screen flex">
       {/* Left Panel - Branding (hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-mesh-warm relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-orange/15" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.06] via-transparent to-orange/[0.08]" />
 
         <div className="relative z-10 text-center px-12 max-w-lg">
-          {/* Logo */}
-          <div className="animate-float mb-8 glow-warm rounded-full">
+          <div className="mb-8 rounded-full">
             <Image
               src="/images/safegrid-logo-warm.svg"
               alt="SAFEGRID Logo"
@@ -25,13 +24,11 @@ export default function AuthLayout({
             />
           </div>
 
-          {/* Tagline */}
           <p className="text-xl text-muted mb-8 leading-relaxed">
             From emergency response to{" "}
             <span className="text-gold font-medium">preventive safety</span>.
           </p>
 
-          {/* Feature Pills */}
           <div className="flex flex-wrap justify-center gap-3">
             {[
               "Safe Journeys",
@@ -48,23 +45,13 @@ export default function AuthLayout({
             ))}
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute top-20 left-20 w-2 h-2 rounded-full bg-gold/30 animate-pulse" />
-        <div className="absolute bottom-32 right-16 w-3 h-3 rounded-full bg-orange/20 animate-pulse-sos" />
-        <div className="absolute top-1/3 right-10 w-1.5 h-1.5 rounded-full bg-gold/40" />
       </div>
 
       {/* Right Panel - Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-background bg-mesh-warm relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-orange/10" />
-
-        {/* Decorative Elements */}
-        <div className="absolute bottom-24 left-10 w-2 h-2 rounded-full bg-gold/20 animate-pulse" />
-        <div className="absolute top-16 right-8 w-1.5 h-1.5 rounded-full bg-orange/15" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.03] via-transparent to-orange/[0.05]" />
 
         <div className="relative z-10 w-full max-w-md">
-          {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <Image
               src="/images/safegrid-logo-warm.svg"
@@ -78,14 +65,19 @@ export default function AuthLayout({
 
           {children}
 
-          {/* Footer */}
           <p className="text-center text-xs text-muted mt-8">
             By continuing, you agree to our{" "}
-            <Link href="#" className="text-gold hover:text-gold-hover transition-colors">
+            <Link
+              href="#"
+              className="text-gold hover:text-gold-hover transition-colors"
+            >
               Terms
             </Link>{" "}
             and{" "}
-            <Link href="#" className="text-gold hover:text-gold-hover transition-colors">
+            <Link
+              href="#"
+              className="text-gold hover:text-gold-hover transition-colors"
+            >
               Privacy Policy
             </Link>
           </p>
