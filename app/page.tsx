@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLockup } from "@/app/components/brand";
+import SplashField from "@/app/components/splash-field";
 
 /* Boot screen. Runs for 2s then replaces to /login.
    Auto-redirect and duration are product behaviour, preserved as-is. */
@@ -25,20 +26,29 @@ export default function SplashScreen() {
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-background">
       {/*
-        TODO: night-street photography, 2400x1600, subject right of centre so
-        the lockup can sit left. The static wash below is the fallback until a
-        real frame lands. Swap it for:
+        No photograph ships yet. Rather than decorate with a generic gradient,
+        this draws the product's own idea: people cluster along a route, and
+        the route traces itself. Swap in real night-street photography later
+        with:
           <Image src="/images/boot-night.jpg" alt="" fill priority
                  sizes="100vw" className="object-cover" />
-        behind a bg-background/70 scrim.
+        behind the same scrim.
       */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 animate-drift"
+        className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 8% 30%, rgba(255,179,0,0.14) 0%, rgba(255,179,0,0.04) 32%, transparent 62%)",
+            "radial-gradient(120% 90% at 8% 30%, rgba(255,179,0,0.12) 0%, rgba(255,179,0,0.03) 32%, transparent 62%)",
         }}
+      />
+      <SplashField />
+
+      {/* Scrim. Guarantees the lockup and line keep their contrast whatever
+          the field is doing behind them. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/40"
       />
 
       <div className="relative min-h-[100dvh] flex flex-col justify-center px-6 sm:px-10 lg:px-16">
