@@ -1,79 +1,298 @@
 @import "tailwindcss";
 
-:root {
-  /* Surfaces */
-  --background: #0a0e17;
-  --foreground: #e8eaed;
-  --card: #111826;
-  --card-border: #1c2434;
-  --input-bg: #0d1420;
-  --input-border: #2a3446;
-  --muted: #7b8698;
+/* ==========================================================================
+   SAFEGRID design tokens
+   --------------------------------------------------------------------------
+   Redesign mode: PRESERVE. The amber-on-near-black identity and the SAFEGRID
+   mark are existing brand assets, so the accent family is kept deliberately
+   rather than re-derived. What changed is everything structural: the radius
+   scale, the type stack, the contrast floor, and the removal of the ambient
+   mesh that was driving the "generic dark landing page" look.
 
-  /* The single brand accent: actions, links, icons, focus */
+   THEME LOCK (skill 4.11): dark, single theme, page level. SAFEGRID is a
+   night-travel safety instrument, so dark is the product, not a preference.
+   Sections never invert.
+   ========================================================================== */
+
+:root {
+  /* Surfaces: cool near-black through to raised panel */
+  --background: #080b12;
+  --surface: #0d111b;
+  --surface-raised: #131a27;
+  --surface-sunken: #0a0e17;
+  --card: #131a27;
+  --card-border: #1e2739;
+  --hairline: #1a2231;
+  --input-bg: #0b1018;
+  --input-border: #2a3446;
+
+  /* Text ramp. Every step below is verified >= 4.5:1 on all three surfaces
+     (--background, --card, --surface-raised), so text-dim is still legal for
+     small prose. Do not add alpha variants: opacity drops these under AA. */
+  --foreground: #eef1f6;
+  --muted: #9aa5b8;
+  --dim: #858e9d;
+
+  /* THE single accent. Actions, links, active state, focus. Nothing else. */
   --gold: #ffb300;
-  --gold-hover: #ffca28;
-  --gold-dim: #ffb3001a;
+  --gold-hover: #ffc733;
+  --gold-dim: #ffb30014;
+  --gold-edge: #ffb30040;
   --orange: #ff6d00;
 
-  /* Semantic status — green only ever means "safe" */
+  /* Semantic status. Green only ever means "safe".
+     Each has a -text variant for use on its own tinted surface, because the
+     base hue does not clear 4.5:1 against a tint of itself. */
   --safe: #00c853;
+  --safe-text: #4ade80;
   --safe-dim: #00c8531a;
+  --safe-edge: #00c85338;
   --danger: #ff1744;
+  --danger-text: #ff8095;
+  --danger-dim: #ff17441a;
+  --danger-edge: #ff174438;
   --warning: #ff9100;
+  --warning-text: #ffb35c;
+  --warning-dim: #ff91001a;
+  --warning-edge: #ff910038;
   --info: #38bdf8;
+
+  /* SHAPE CONSISTENCY LOCK (skill 4.4). One scale, three steps, no exceptions:
+       surfaces  -> rounded-2xl (16px)
+       controls  -> rounded-xl  (12px)
+       chips     -> rounded-full
+     Mixing these inside one component is a fail. */
+  --radius-surface: 1rem;
+  --radius-control: 0.75rem;
+
+  --focus-ring: var(--gold);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
   --color-card: var(--card);
   --color-card-border: var(--card-border);
+  --color-hairline: var(--hairline);
   --color-input-bg: var(--input-bg);
   --color-input-border: var(--input-border);
   --color-muted: var(--muted);
+  --color-dim: var(--dim);
   --color-gold: var(--gold);
   --color-gold-hover: var(--gold-hover);
   --color-gold-dim: var(--gold-dim);
+  --color-gold-edge: var(--gold-edge);
   --color-orange: var(--orange);
   --color-safe: var(--safe);
+  --color-safe-text: var(--safe-text);
   --color-safe-dim: var(--safe-dim);
+  --color-safe-edge: var(--safe-edge);
   --color-danger: var(--danger);
+  --color-danger-text: var(--danger-text);
+  --color-danger-dim: var(--danger-dim);
+  --color-danger-edge: var(--danger-edge);
   --color-warning: var(--warning);
+  --color-warning-text: var(--warning-text);
+  --color-warning-dim: var(--warning-dim);
+  --color-warning-edge: var(--warning-edge);
   --color-info: var(--info);
-  --font-sans: var(--font-plex-sans);
-  --font-mono: var(--font-plex-mono);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--hairline);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Ambient page mesh — amber, low enough to read as depth not colour */
-.bg-mesh-warm {
-  background-image:
-    radial-gradient(at 40% 20%, rgba(255, 179, 0, 0.05) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(255, 179, 0, 0.04) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(255, 179, 0, 0.025) 0px, transparent 50%);
+::selection {
+  background: var(--gold);
+  color: var(--background);
 }
 
-/* Splash entrance */
-@keyframes splash-in {
-  0% { opacity: 0; transform: scale(0.92); }
-  100% { opacity: 1; transform: scale(1); }
+/* Visible focus on the single accent. Never remove without a replacement. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-.animate-splash-in {
-  animation: splash-in 0.7s ease-out both;
+/* --------------------------------------------------------------------------
+   Ambient surface treatment
+   Replaces the previous three-stop radial mesh. That read as a generic dark
+   marketing hero; this is a single directional wash plus a fixed grain plate.
+   Both are static, so neither costs a repaint on scroll.
+   -------------------------------------------------------------------------- */
+.bg-ambient {
+  position: relative;
+  isolation: isolate;
 }
 
-@keyframes splash-fade-in {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0px); }
+.bg-ambient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--gold) 0%,
+    transparent 42%
+  );
+  opacity: 0.035;
 }
 
-.animate-splash-in-delay {
-  animation: splash-fade-in 0.7s ease-out 0.35s both;
+/* Grain is a FIXED, pointer-events-none plate. Never put this on a scrolling
+   container, that repaints the whole subtree every frame on mobile. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* --------------------------------------------------------------------------
+   Motion
+   MOTION_INTENSITY: 4. Every animation below is either load feedback or
+   state acknowledgement, and every one collapses under reduced motion.
+   -------------------------------------------------------------------------- */
+
+/* Brand entrance. Communicates: the app is booting. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.6s var(--ease-out) both;
+}
+
+/* Load progress rule. Communicates: time remaining before redirect. */
+@keyframes fill-forward {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-fill {
+  transform-origin: left center;
+  animation: fill-forward 2s linear both;
+}
+
+/* Live-state pulse. Communicates: a sensor is currently reporting. Reserved
+   for genuine live indicators, never used as decoration. */
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.animate-live {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* Slow drift for the ambient brand panel. Communicates: nothing. It exists to
+   keep the panel from reading as a flat rectangle, so it is the one animation
+   that gets cut first. */
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
+}
+
+.animate-drift {
+  animation: drift 18s ease-in-out infinite alternate;
+}
+
+/* Mapbox ships light-theme defaults for its attribution control, which drops a
+   bright grey bar into a dark UI and measures 4.42:1. Recolour it onto our
+   surfaces rather than hiding it, since the attribution is legally required. */
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-attrib.mapboxgl-compact {
+  background: var(--card) !important;
+  color: var(--muted) !important;
+  font-size: 11px;
+}
+
+.mapboxgl-ctrl-attrib a,
+.mapboxgl-ctrl-attrib-inner a {
+  color: var(--muted) !important;
+}
+
+.mapboxgl-ctrl-attrib-button {
+  background-color: var(--card) !important;
+}
+
+.mapboxgl-ctrl-attrib-button:hover {
+  background-color: var(--surface-raised) !important;
+}
+
+.mapboxgl-ctrl-group {
+  background: var(--card) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+.mapboxgl-ctrl-group button + button {
+  border-top: 1px solid var(--card-border) !important;
+}
+
+.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  filter: invert(1) opacity(0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-fill,
+  .animate-drift,
+  .animate-live {
+    animation: none !important;
+  }
+
+  .animate-fill {
+    transform: scaleX(1);
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Crosshair,
+  Globe,
   Loader2,
-  Locate,
+  LocateFixed,
   ShieldCheck,
   TriangleAlert,
-  Globe,
 } from "lucide-react";
 import { loadLocation, saveLocation } from "../../../lib/safegrid-store";
-import { Button, Card, Pill } from "@/app/components/ui";
+import { Button, Panel, SetupProgress } from "@/app/components/ui";
 
 type Status = "idle" | "requesting" | "granted" | "denied";
+
+const STEPS = ["Add your safety net", "Enable live location"];
 
 export default function OnboardingLocationPage() {
   const router = useRouter();
@@ -63,79 +65,90 @@ export default function OnboardingLocationPage() {
 
   if (loading) {
     return (
-      <Card glass className="flex items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 text-gold animate-spin" />
-      </Card>
+      <Panel className="flex items-center justify-center py-16">
+        <Loader2
+          className="w-6 h-6 text-gold animate-spin"
+          strokeWidth={2}
+          role="status"
+          aria-label="Loading saved location"
+        />
+      </Panel>
     );
   }
 
   return (
-    <Card glass className="p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Pill>
-            <Locate className="w-3.5 h-3.5" /> Step 2 of 2
-          </Pill>
-        </div>
-        <h2 className="text-3xl font-bold mb-2 tracking-tight">
-          Enable live location
-        </h2>
-        <p className="text-muted">
-          SAFEGRID needs your location to show you on the safety map and share a
-          live position with your safety net during an SOS.
-        </p>
-      </div>
+    <div>
+      <SetupProgress current={1} steps={STEPS} />
 
-      {/* Permission Illustration */}
-      <div className="mb-8 rounded-xl bg-gold-dim border border-gold/20 p-6 text-center">
-        <div className="relative mx-auto mb-4 w-24 h-24">
-          <div className="absolute inset-0 rounded-full bg-gold/10 animate-pulse" />
-          <div className="absolute inset-4 rounded-full bg-gold/15 animate-pulse" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Crosshair className="w-10 h-10 text-gold" />
+      <h1 className="mt-8 text-2xl font-semibold tracking-[-0.02em]">
+        Enable live location
+      </h1>
+      <p className="mt-2 text-sm text-muted leading-relaxed">
+        SAFEGRID needs a position to place you on the safety map and to share
+        with your contacts during an SOS.
+      </p>
+
+      {/* Radar motif. Static geometry, no looping animation: this panel is
+          informational, so it does not need to move. */}
+      <div className="relative mt-8 overflow-hidden rounded-2xl border border-gold-edge bg-gold-dim">
+        <div className="flex items-center gap-5 p-5">
+          <div className="relative shrink-0 w-16 h-16" aria-hidden="true">
+            <div className="absolute inset-0 rounded-full border border-gold-edge" />
+            <div className="absolute inset-3 rounded-full border border-gold/25" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Crosshair className="w-7 h-7 text-gold" strokeWidth={1.5} />
+            </div>
           </div>
+          <p className="text-sm text-muted leading-relaxed">
+            Your position stays private. It is shared with your three emergency
+            contacts, and only while a journey or SOS is active.
+          </p>
         </div>
-        <p className="text-sm text-muted mb-1">
-          Your live position stays
-          <span className="text-gold font-medium"> private</span> — only shared
-          with your 3 emergency contacts, and only during an active SOS.
-        </p>
       </div>
 
-      {/* Status Message */}
       {status === "requesting" && (
-        <div className="mb-6 p-4 rounded-xl bg-gold-dim border border-gold/20 text-sm text-muted flex items-center gap-3">
-          <Loader2 className="w-4 h-4 text-gold animate-spin" />
-          Waiting for you to allow location access in the browser prompt…
+        <div
+          role="status"
+          className="mt-5 rounded-xl bg-gold-dim border border-gold-edge px-4 py-3 text-sm text-muted flex items-center gap-3"
+        >
+          <Loader2 className="w-4 h-4 text-gold animate-spin" strokeWidth={2} />
+          Waiting for you to allow location access in the browser prompt.
         </div>
       )}
 
       {status === "granted" && coords && (
-        <div className="mb-6 p-4 rounded-xl bg-safe-dim border border-safe/20 text-sm flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-safe shrink-0" />
+        <div
+          role="status"
+          className="mt-5 rounded-xl bg-safe-dim border border-safe-edge px-4 py-3 text-sm flex items-start gap-3"
+        >
+          <ShieldCheck
+            className="w-4 h-4 text-safe-text shrink-0 mt-0.5"
+            strokeWidth={2}
+          />
           <span className="text-muted">
             Location enabled at{" "}
-            <span className="text-safe font-medium font-mono">
+            <span className="font-mono text-safe-text">
               {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
             </span>
-            . Opening your dashboard…
+            . Opening your dashboard.
           </span>
         </div>
       )}
 
       {status === "denied" && (
-        <div className="mb-6 p-4 rounded-xl bg-danger/10 border border-danger/20 text-sm text-danger flex items-start gap-3">
-          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
-          <div>
+        <div
+          role="alert"
+          className="mt-5 rounded-xl bg-danger-dim border border-danger-edge px-4 py-3 text-sm text-danger-text flex items-start gap-3"
+        >
+          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={2} />
+          <span>
             Location was blocked or the request timed out. You can continue, but
             live tracking on the dashboard will be unavailable.
-          </div>
+          </span>
         </div>
       )}
 
-      {/* Actions */}
-      <div className="space-y-3">
+      <div className="mt-8 space-y-3">
         <Button
           type="button"
           onClick={requestLocation}
@@ -143,12 +156,11 @@ export default function OnboardingLocationPage() {
           loading={status === "requesting"}
         >
           {status === "granted" ? (
-            <>
-              Access Enabled <ShieldCheck className="w-4 h-4" />
-            </>
+            "Access enabled"
           ) : (
             <>
-              <Locate className="w-4 h-4" /> Allow Location Access
+              <LocateFixed className="w-4 h-4" strokeWidth={2} />
+              Allow location access
             </>
           )}
         </Button>
@@ -158,7 +170,6 @@ export default function OnboardingLocationPage() {
             type="button"
             variant="quiet"
             block
-            className="py-3"
             onClick={continueAnyway}
           >
             Continue without location
@@ -166,10 +177,10 @@ export default function OnboardingLocationPage() {
         )}
       </div>
 
-      <p className="text-center text-xs text-muted mt-6 flex items-center justify-center gap-1.5">
-        <Globe className="w-3.5 h-3.5" />
-        Used only while you&apos;re on an active Safe Journey or SOS.
+      <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted">
+        <Globe className="w-3.5 h-3.5" strokeWidth={1.75} />
+        Only used while a Safe Journey or SOS is running.
       </p>
-    </Card>
+    </div>
   );
 }

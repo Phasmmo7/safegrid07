@@ -1,24 +1,14 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { BrandLockup } from "./brand";
 
+/* Nav height is 60px. The previous bar was 86px because it rendered the full
+   400x540 vertical logo lockup at 54px tall. */
 export default function SiteHeader({ children }: { children?: ReactNode }) {
   return (
-    <header className="relative z-10 border-b border-card-border px-6 py-4 bg-background/70 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <Image
-            src="/images/safegrid-logo.svg"
-            alt="SAFEGRID"
-            width={40}
-            height={54}
-            className="rounded-lg"
-          />
-          <span className="text-xl font-bold tracking-tight">
-            SAFE<span className="text-gold">GRID</span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-3">{children}</div>
+    <header className="sticky top-0 z-40 border-b border-hairline bg-background/85 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 h-[60px] flex items-center justify-between gap-4">
+        <BrandLockup href="/dashboard" />
+        <div className="flex items-center gap-2 sm:gap-3">{children}</div>
       </div>
     </header>
   );

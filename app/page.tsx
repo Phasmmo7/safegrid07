@@ -1,40 +1,71 @@
 "use client";
 
-import { useEffect } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandLockup } from "@/app/components/brand";
+
+/* Boot screen. Runs for 2s then replaces to /login.
+   Auto-redirect and duration are product behaviour, preserved as-is. */
+
+const BOOT_MS = 2000;
 
 export default function SplashScreen() {
   const router = useRouter();
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("/login");
-    }, 2000);
-
-    return () => clearTimeout(timer);
+    const out = window.setTimeout(() => setLeaving(true), BOOT_MS - 260);
+    const nav = window.setTimeout(() => router.replace("/login"), BOOT_MS);
+    return () => {
+      window.clearTimeout(out);
+      window.clearTimeout(nav);
+    };
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-mesh-warm overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.06] via-transparent to-orange/[0.08]" />
+    <div className="relative min-h-[100dvh] overflow-hidden bg-background">
+      {/*
+        TODO: night-street photography, 2400x1600, subject right of centre so
+        the lockup can sit left. The static wash below is the fallback until a
+        real frame lands. Swap it for:
+          <Image src="/images/boot-night.jpg" alt="" fill priority
+                 sizes="100vw" className="object-cover" />
+        behind a bg-background/70 scrim.
+      */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 animate-drift"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 8% 30%, rgba(255,179,0,0.14) 0%, rgba(255,179,0,0.04) 32%, transparent 62%)",
+        }}
+      />
 
-      <div className="relative z-10 text-center px-6">
-        <div className="mb-8 rounded-full">
-          <Image
-            src="/images/safegrid-logo-warm.svg"
-            alt="SAFEGRID Logo"
-            width={240}
-            height={324}
-            className="mx-auto animate-splash-in"
-            priority
-          />
+      <div className="relative min-h-[100dvh] flex flex-col justify-center px-6 sm:px-10 lg:px-16">
+        <div
+          className="max-w-xl transition-opacity duration-200 ease-out"
+          style={{ opacity: leaving ? 0 : 1 }}
+        >
+          <div className="animate-rise">
+            <BrandLockup />
+          </div>
+
+          <p
+            className="animate-rise mt-8 text-2xl sm:text-3xl leading-[1.25] tracking-[-0.02em] text-muted max-w-[18ch] sm:max-w-none"
+            style={{ animationDelay: "120ms" }}
+          >
+            From emergency response to{" "}
+            <span className="text-foreground">preventive safety</span>.
+          </p>
         </div>
+      </div>
 
-        <p className="text-xl text-muted animate-splash-in-delay leading-relaxed">
-          From emergency response to{" "}
-          <span className="text-gold font-medium">preventive safety</span>.
-        </p>
+      {/* Load progress. Communicates time remaining, so it earns its motion. */}
+      <div className="absolute inset-x-0 bottom-0 h-px bg-card-border">
+        <div
+          className="h-full bg-gold animate-fill"
+          style={{ animationDuration: `${BOOT_MS}ms` }}
+        />
       </div>
     </div>
   );

@@ -3,22 +3,38 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowLeft,
   CircleCheck,
   Flag,
   LocateFixed,
   MapPin,
   Navigation,
   RefreshCw,
-  Route,
+  Route as RouteIcon,
+  Square,
   Timer,
   TriangleAlert,
   Users,
 } from "lucide-react";
 import JourneyMap from "./journey-map";
-import { DEFAULT_ORIGIN, DESTINATIONS, getJourneyRoutes, recommendBetterRoute, RouteOption } from "../lib/routes";
+import {
+  DEFAULT_ORIGIN,
+  DESTINATIONS,
+  getJourneyRoutes,
+  recommendBetterRoute,
+  RouteOption,
+} from "../lib/routes";
 import { loadLocation } from "../lib/safegrid-store";
 import SiteHeader from "@/app/components/site-header";
-import { Button, Card, Pill, StatusStrip } from "@/app/components/ui";
+import {
+  Button,
+  Chip,
+  Divider,
+  LiveDot,
+  Panel,
+  Select,
+  StatusStrip,
+} from "@/app/components/ui";
 
 type Phase = "setup" | "loading" | "active";
 
@@ -58,7 +74,6 @@ export default function JourneyPage() {
   }, [phase]);
 
   const destination = DESTINATIONS.find((d) => d.id === destinationId)!;
-
   const activeRoute = routes.find((r) => r.id === activeId) ?? routes[0] ?? null;
 
   const handleStart = async () => {
@@ -87,257 +102,315 @@ export default function JourneyPage() {
     const result = recommendBetterRoute(routes, current.id);
     setActiveId(result.route.id);
     setRerouteDelta(result.delta);
-    if (result.isBest) {
-      setNotice(
-        "You're already on the busiest route — maximum people around you.",
-      );
-    } else {
-      setNotice("Rerouted to the busier route for safer travel.");
-    }
+    setNotice(
+      result.isBest
+        ? "This is already the busiest route. You have the most people around you."
+        : `Rerouted onto ${result.route.name}, the busiest of the options.`,
+    );
   };
 
-  const crowdBadge = (route: RouteOption) => (
-    <div className="text-right shrink-0">
-      <div className="text-sm font-bold inline-flex items-center gap-1">
-        <Users className="w-3.5 h-3.5 text-gold" />
+  const crowd = (route: RouteOption) => (
+    <div className="shrink-0 text-right">
+      <div className="font-mono text-sm font-medium tabular-nums">
         {route.peoplePresent.toLocaleString("en-IN")}
       </div>
-      <div className="text-[11px] text-muted">people now</div>
+      <div className="text-xs text-muted">people now</div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background bg-mesh-warm relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col bg-background">
       <SiteHeader>
         <Link
           href="/dashboard"
-          className="text-sm text-muted hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 -ml-2.5 min-h-11 rounded-lg px-2.5 text-sm text-muted transition-colors hover:bg-surface-raised hover:text-foreground"
         >
-          ← Back to dashboard
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.75} />
+          Dashboard
         </Link>
       </SiteHeader>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        <h1 className="text-2xl font-bold mb-1">Safe Journey</h1>
-        <p className="text-muted mb-6">
-          Choose a destination, then ask SAFEGRID to reroute to the safest path
-          — the one with more people around.
+      <main className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-6 py-8">
+        <h1 className="text-2xl font-semibold tracking-[-0.02em]">
+          Safe journey
+        </h1>
+        <p className="mt-2 text-sm text-muted max-w-[62ch] leading-relaxed">
+          Set a destination, then let SAFEGRID move you onto the route with the
+          most people on it.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[400px,1fr] gap-6">
-          {/* Left: controls */}
-          <div className="space-y-4">
-            {/* Setup card */}
-            <Card className="p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gold-dim border border-gold/25 flex items-center justify-center">
-                  <LocateFixed className="w-5 h-5 text-gold" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs text-muted">From</div>
-                  <div className="font-medium truncate text-sm">
-                    {originLabel}
-                  </div>
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
+          {/* Control column. The previous build stacked three separate cards
+              (setup, current route, alternatives) with gaps. They are now one
+              panel with hairline-separated sections, so the column reads as a
+              single instrument instead of a pile. */}
+          <Panel className="px-5">
+            <div className="flex items-center gap-3 py-5">
+              <div className="w-9 h-9 rounded-xl bg-gold-dim border border-gold-edge flex items-center justify-center shrink-0">
+                <LocateFixed className="w-4 h-4 text-gold" strokeWidth={1.75} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs text-muted">Starting from</div>
+                <div className="text-sm font-medium truncate">
+                  {originLabel}
                 </div>
               </div>
+            </div>
 
-              <label className="block text-xs font-medium text-muted mb-2 uppercase tracking-wider">
+            <Divider />
+
+            <div className="py-5">
+              <label
+                htmlFor="destination"
+                className="block text-sm font-medium mb-2"
+              >
                 Destination
               </label>
-              <div className="relative mb-4">
-                <Flag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gold" />
-                <select
-                  value={destinationId}
-                  onChange={(e) => setDestinationId(e.target.value)}
-                  disabled={phase === "active"}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-input-bg border border-input-border text-foreground focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-all text-sm appearance-none"
-                >
-                  {DESTINATIONS.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
+              <Select
+                id="destination"
+                value={destinationId}
+                onChange={(e) => setDestinationId(e.target.value)}
+                disabled={phase === "active"}
+                icon={<Flag className="w-4 h-4 text-gold" strokeWidth={1.75} />}
+              >
+                {DESTINATIONS.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.label}
+                  </option>
+                ))}
+              </Select>
+
+              <div className="mt-4">
+                {phase !== "active" ? (
+                  <Button
+                    type="button"
+                    onClick={handleStart}
+                    block
+                    loading={phase === "loading"}
+                  >
+                    <Navigation className="w-4 h-4" strokeWidth={2} />
+                    Start journey
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    block
+                    onClick={handleStop}
+                  >
+                    <Square className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    End journey
+                  </Button>
+                )}
               </div>
+            </div>
 
-              {phase !== "active" ? (
-                <Button
-                  type="button"
-                  onClick={handleStart}
-                  block
-                  loading={phase === "loading"}
-                >
-                  <Navigation className="w-4 h-4" /> Start Journey
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="danger"
-                  block
-                  onClick={handleStop}
-                >
-                  End Journey
-                </Button>
-              )}
-            </Card>
-
-            {/* Active journey status */}
             {phase === "active" && activeRoute && (
               <>
+                <Divider />
+
                 {/* Current route */}
-                <Card className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold flex items-center gap-2 text-sm">
-                      <Route className="w-4 h-4 text-gold" /> Current route
+                <div className="py-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="flex items-center gap-2 text-sm font-semibold">
+                      <RouteIcon
+                        className="w-4 h-4 text-gold"
+                        strokeWidth={1.75}
+                      />
+                      Current route
                     </h2>
-                    <Pill tone="safe" className="px-2.5 py-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
+                    <Chip tone="safe">
+                      <LiveDot />
                       Live
-                    </Pill>
+                    </Chip>
                   </div>
 
-                  <div className="font-medium">{activeRoute.name}</div>
-                  <div className="flex items-center gap-4 mt-3 mb-4 text-sm">
-                    <span className="text-muted flex items-center gap-1.5">
-                      <Timer className="w-4 h-4 text-gold" />
-                      {activeRoute.etaMinutes} min
-                    </span>
-                    <span className="text-muted flex items-center gap-1.5">
-                      <Navigation className="w-4 h-4 text-gold" />
-                      {activeRoute.distanceKm.toFixed(1)} km
-                    </span>
-                  </div>
+                  <div className="mt-3.5 font-medium">{activeRoute.name}</div>
 
-                  {/* People present */}
-                  <div className="p-3 rounded-xl bg-gold-dim border border-gold/20 mb-4">
-                    <div className="flex items-center justify-between">
-                      {crowdBadge(activeRoute)}
-                      <div className="text-right w-full pl-3">
-                        <div className="flex items-center justify-between text-xs text-muted mb-1.5">
-                          <span>Crowd density</span>
-                          <span className="text-gold font-semibold">
-                            {activeRoute.crowdScore}/100
-                          </span>
+                  <dl className="mt-4 flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <dt className="sr-only">Estimated time</dt>
+                      <Timer
+                        className="w-4 h-4 text-muted"
+                        strokeWidth={1.75}
+                      />
+                      <dd className="font-mono tabular-nums">
+                        {activeRoute.etaMinutes} min
+                      </dd>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <dt className="sr-only">Distance</dt>
+                      <Navigation
+                        className="w-4 h-4 text-muted"
+                        strokeWidth={1.75}
+                      />
+                      <dd className="font-mono tabular-nums">
+                        {activeRoute.distanceKm.toFixed(1)} km
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {/* Crowding. The figure leads and a hairline bar supports it,
+                      rather than a filled track with a number in a corner. */}
+                  <div className="mt-5 rounded-xl bg-gold-dim border border-gold-edge px-4 py-3.5">
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
+                        <div className="text-xs text-muted">
+                          People on this route
                         </div>
-                        <div className="h-2 rounded-full bg-card overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-orange via-gold to-safe transition-all duration-700"
-                            style={{ width: `${activeRoute.crowdScore}%` }}
-                          />
+                        <div className="mt-1 font-mono text-2xl leading-none text-gold tabular-nums">
+                          {activeRoute.peoplePresent.toLocaleString("en-IN")}
                         </div>
                       </div>
+                      <div className="text-right">
+                        <div className="font-mono text-sm tabular-nums">
+                          {activeRoute.crowdScore}
+                          <span className="text-muted">/100</span>
+                        </div>
+                        <div className="text-xs text-muted">crowding</div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex gap-0.5" aria-hidden="true">
+                      {Array.from({ length: 20 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={
+                            i < Math.round(activeRoute.crowdScore / 5)
+                              ? "h-1 flex-1 rounded-full bg-gold"
+                              : "h-1 flex-1 rounded-full bg-gold/20"
+                          }
+                        />
+                      ))}
                     </div>
                   </div>
 
-                  {/* Better route CTA */}
-                  <Button
-                    type="button"
-                    variant="tinted"
-                    block
-                    className="py-3"
-                    onClick={handleBetterRoute}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Find better route — more people
-                  </Button>
+                  <div className="mt-4">
+                    <Button
+                      type="button"
+                      variant="tinted"
+                      block
+                      onClick={handleBetterRoute}
+                    >
+                      <RefreshCw className="w-4 h-4" strokeWidth={2} />
+                      Find a busier route
+                    </Button>
+                  </div>
 
                   {notice && (
-                    <p className="mt-3 text-xs text-muted flex items-start gap-2">
-                      <CircleCheck className="w-4 h-4 text-safe shrink-0 mt-0.5" />
+                    <p
+                      role="status"
+                      className="mt-3.5 flex items-start gap-2 text-xs text-muted leading-relaxed"
+                    >
+                      <CircleCheck
+                        className="w-3.5 h-3.5 text-safe-text shrink-0 mt-0.5"
+                        strokeWidth={2}
+                      />
                       {notice}
                     </p>
                   )}
                   {rerouteDelta !== null && rerouteDelta > 0 && (
-                    <p className="mt-2 text-xs flex items-start gap-2 text-safe">
-                      <Users className="w-4 h-4 shrink-0 mt-0.5" />
-                      +{rerouteDelta.toLocaleString("en-IN")} more people on
-                      this route
+                    <p className="mt-2 flex items-start gap-2 text-xs text-safe-text leading-relaxed">
+                      <Users className="w-3.5 h-3.5 shrink-0 mt-0.5" strokeWidth={2} />
+                      {rerouteDelta.toLocaleString("en-IN")} more people on this
+                      route than the one before.
                     </p>
                   )}
-                </Card>
+                </div>
+
+                <Divider />
 
                 {/* Alternatives */}
-                <Card className="p-5">
-                  <h2 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gold" /> Alternative routes
+                <div className="py-5">
+                  <h2 className="mb-3.5 flex items-center gap-2 text-sm font-semibold">
+                    <MapPin className="w-4 h-4 text-gold" strokeWidth={1.75} />
+                    Other routes
                   </h2>
-                  <div className="space-y-2.5">
+                  <ul className="space-y-1.5">
                     {routes.map((route) => {
                       const isActive = route.id === activeId;
                       return (
-                        <button
-                          key={route.id}
-                          type="button"
-                          disabled={isActive}
-                          onClick={() => {
-                            setActiveId(route.id);
-                            setRerouteDelta(null);
-                            setNotice(
-                              isActive
-                                ? ""
-                                : `Showing ${route.name}. Ask for a better route to compare crowd density.`,
-                            );
-                          }}
-                          className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border text-left transition-all ${
-                            isActive
-                              ? "bg-gold-dim border-gold/40"
-                              : "bg-background border-card-border hover:border-gold/40"
-                          }`}
-                        >
-                          <div className="min-w-0">
-                            <div className="font-medium text-sm truncate flex items-center gap-2">
-                              <span
-                                className="w-2 h-2 rounded-full shrink-0"
-                                style={{ background: route.color }}
-                              />
-                              {route.name}
-                            </div>
-                            <div className="text-xs text-muted">
-                              {route.etaMinutes} min ·{" "}
-                              {route.distanceKm.toFixed(1)} km
-                            </div>
-                          </div>
-                          {crowdBadge(route)}
-                        </button>
+                        <li key={route.id}>
+                          <button
+                            type="button"
+                            disabled={isActive}
+                            onClick={() => {
+                              setActiveId(route.id);
+                              setRerouteDelta(null);
+                              setNotice(
+                                `Now showing ${route.name}. Ask for a busier route to compare crowding.`,
+                              );
+                            }}
+                            className={
+                              "w-full flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-200 " +
+                              (isActive
+                                ? "bg-gold-dim border-gold-edge"
+                                : "border-card-border hover:border-gold-edge bg-transparent disabled:cursor-default")
+                            }
+                          >
+                            <span className="min-w-0">
+                              <span className="flex items-center gap-2 text-sm font-medium truncate">
+                                <span
+                                  className="w-2 h-2 rounded-full shrink-0"
+                                  style={{ background: route.color }}
+                                  aria-hidden="true"
+                                />
+                                {route.name}
+                                {isActive && (
+                                  <span className="sr-only">(current route)</span>
+                                )}
+                              </span>
+                              <span className="mt-0.5 block font-mono text-xs text-muted tabular-nums">
+                                {route.etaMinutes} min
+                                <span className="text-dim"> / </span>
+                                {route.distanceKm.toFixed(1)} km
+                              </span>
+                            </span>
+                            {crowd(route)}
+                          </button>
+                        </li>
                       );
                     })}
-                  </div>
-                </Card>
+                  </ul>
+                </div>
               </>
             )}
-          </div>
+          </Panel>
 
-          {/* Right: map */}
-          <div>
-            <JourneyMap
-              routes={routes}
-              activeRouteId={activeId}
-              from={origin}
-              to={destination.coords}
-              progress={progress}
-            />
-          </div>
+          {/* Map */}
+          <JourneyMap
+            routes={routes}
+            activeRouteId={activeId}
+            from={origin}
+            to={destination.coords}
+            progress={progress}
+          />
         </div>
 
-        {/* Voice SOS */}
-        <StatusStrip className="mt-8">
-          Voice SOS: <span className="text-safe font-medium">Active</span> —
-          Say &quot;SAFEGRID SOS&quot; to trigger emergency
-        </StatusStrip>
-
-        {originLabel !== "Your live location" && (
-          <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/20 text-sm text-muted flex items-start gap-3">
-            <TriangleAlert className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-            Location permission was not granted, so the journey starts from a
-            demo location in Bengaluru.{" "}
+        {originLabel !== "Your live location" && (          <div
+            role="status"
+            className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl bg-warning-dim border border-warning-edge px-4 py-3.5"
+          >
+            <TriangleAlert
+              className="w-4 h-4 text-warning-text shrink-0"
+              strokeWidth={2}
+            />
+            <p className="text-sm text-muted leading-relaxed">
+              Location permission was not granted, so this journey starts from a
+              demo point in Bengaluru.
+            </p>
             <Link
               href="/onboarding/location"
-              className="text-gold hover:text-gold-hover transition-colors shrink-0"
+              className="shrink-0 text-sm text-gold transition-colors hover:text-gold-hover"
             >
-              Enable
+              Enable location
             </Link>
           </div>
         )}
+
+        <StatusStrip className="mt-4">
+          Voice SOS is active. Say &quot;SAFEGRID SOS&quot; to alert your network
+          without touching your phone.
+        </StatusStrip>
       </main>
     </div>
   );

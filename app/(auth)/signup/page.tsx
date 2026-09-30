@@ -1,9 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Mail, Lock, User, Phone, ArrowRight, Check } from "lucide-react";
-import { Button, Card, Input } from "@/app/components/ui";
+import {
+  Check,
+  Lock,
+  Mail,
+  Phone,
+  User,
+  UserPlus,
+  X,
+} from "lucide-react";
+import { Button, Field, Input } from "@/app/components/ui";
+
+/* Rules are evaluated against the live value. The previous build rendered a
+   gold tick next to all three unconditionally, so the form claimed the
+   password was already valid before a character was typed. */
+const rules = [
+  { id: "length", label: "At least 6 characters", test: (v: string) => v.length >= 6 },
+  { id: "number", label: "One number", test: (v: string) => /\d/.test(v) },
+  { id: "symbol", label: "One symbol", test: (v: string) => /[^\w\s]/.test(v) },
+];
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -12,111 +29,132 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const results = useMemo(
+    () => rules.map((r) => ({ ...r, met: r.test(password) })),
+    [password],
+  );
+  const passwordValid = results.every((r) => r.met);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Simulated auth, pending Supabase wiring.
     await new Promise((r) => setTimeout(r, 1500));
     window.location.href = "/onboarding/contacts";
   };
 
   return (
-    <Card glass className="p-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2 tracking-tight">
-          Create your account
-        </h2>
-        <p className="text-muted">Join SAFEGRID and travel safer</p>
-      </div>
+    <div>
+      <h1 className="text-2xl font-semibold tracking-[-0.02em]">
+        Create your account
+      </h1>
+      <p className="mt-2 text-muted text-sm">
+        Two details to finish setting up: your safety net and your location.
+      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium mb-2 text-muted"
-          >
-            Full name
-          </label>
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <Field label="Full name" htmlFor="name">
           <Input
             id="name"
+            name="name"
             type="text"
+            autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your full name"
             required
-            icon={<User className="w-5 h-5" />}
+            icon={<User className="w-4 h-4" strokeWidth={1.75} />}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium mb-2 text-muted"
-          >
-            Email address
-          </label>
+        <Field label="Email address" htmlFor="email">
           <Input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            icon={<Mail className="w-5 h-5" />}
+            icon={<Mail className="w-4 h-4" strokeWidth={1.75} />}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label
-            htmlFor="phone"
-            className="block text-sm font-medium mb-2 text-muted"
-          >
-            Phone number
-          </label>
+        <Field
+          label="Phone number"
+          htmlFor="phone"
+          hint="Used to reach you if we cannot reach your contacts."
+        >
           <Input
             id="phone"
+            name="phone"
             type="tel"
+            autoComplete="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+91 98765 43210"
             required
-            icon={<Phone className="w-5 h-5" />}
+            icon={<Phone className="w-4 h-4" strokeWidth={1.75} />}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium mb-2 text-muted"
-          >
-            Password
-          </label>
+        <Field
+          label="Password"
+          htmlFor="password"
+          error={
+            password.length > 0 && !passwordValid
+              ? "Password does not meet all three rules yet."
+              : undefined
+          }
+        >
           <Input
             id="password"
+            name="password"
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Create a strong password"
+            placeholder="Create a password"
             required
-            icon={<Lock className="w-5 h-5" />}
+            icon={<Lock className="w-4 h-4" strokeWidth={1.75} />}
           />
-          <div className="mt-2 flex gap-3">
-            {["6+ chars", "1 number", "1 symbol"].map((rule) => (
-              <span key={rule} className="flex items-center gap-1 text-xs text-muted">
-                <Check className="w-3 h-3 text-gold/60" />
-                {rule}
-              </span>
-            ))}
-          </div>
-        </div>
+        </Field>
 
-        <Button type="submit" block loading={isLoading}>
-          Create Account
-          <ArrowRight className="w-4 h-4" />
+        <ul className="flex flex-wrap gap-x-5 gap-y-2">
+          {results.map((rule) => (
+            <li
+              key={rule.id}
+              className={
+                rule.met
+                  ? "flex items-center gap-1.5 text-xs text-safe-text"
+                  : "flex items-center gap-1.5 text-xs text-muted"
+              }
+            >
+              {rule.met ? (
+                <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+              ) : (
+                <X className="w-3.5 h-3.5 text-dim" strokeWidth={2} />
+              )}
+              {rule.label}
+            </li>
+          ))}
+        </ul>
+
+        <Button
+          type="submit"
+          block
+          loading={isLoading}
+          disabled={!passwordValid}
+        >
+          Create account
+          <UserPlus className="w-4 h-4" strokeWidth={2} />
         </Button>
       </form>
 
-      <p className="text-center text-sm text-muted mt-8">
-        Already have an account?{" "}
+      <p className="mt-8 text-sm text-muted">
+        Already registered?{" "}
         <Link
           href="/login"
           className="text-gold hover:text-gold-hover font-medium transition-colors"
@@ -124,6 +162,6 @@ export default function SignupPage() {
           Sign in
         </Link>
       </p>
-    </Card>
+    </div>
   );
 }

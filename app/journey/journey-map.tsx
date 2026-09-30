@@ -215,17 +215,18 @@ export default function JourneyMap({
 
   if (MAPBOX_TOKEN_MISSING) {
     return (
-      <div className="h-full min-h-[420px] rounded-xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
+      <div className="flex h-full min-h-[420px] flex-col items-center justify-center rounded-2xl border border-card-border bg-card p-8 text-center">
         <div className="max-w-sm">
-          <TriangleAlert className="w-8 h-8 text-gold mx-auto mb-3" />
-          <h3 className="font-semibold mb-1">Mapbox token missing</h3>
-          <p className="text-sm text-muted">
+          <TriangleAlert className="mx-auto mb-3 w-7 h-7 text-gold" strokeWidth={1.75} />
+          <h3 className="font-medium">Mapbox token missing</h3>
+          <p className="mt-2 text-sm text-muted leading-relaxed">
             Set{" "}
-            <code className="text-gold">
-              NEXT_PUBLIC_MAPBOX_TOKEN=pk.xxxx
+            <code className="font-mono text-xs text-foreground">
+              NEXT_PUBLIC_MAPBOX_TOKEN
             </code>{" "}
-            in <code className="text-gold">.env.local</code> to draw your route
-            on the live map. Routing still works below with simulated paths.
+            in <code className="font-mono text-xs text-foreground">.env.local</code>{" "}
+            to draw your route on the map. Routing and crowd comparison still work
+            on the left.
           </p>
         </div>
       </div>
@@ -233,16 +234,19 @@ export default function JourneyMap({
   }
 
   return (
-    <div className="relative h-full min-h-[420px]">
+    <div className="relative h-full min-h-[420px] overflow-hidden rounded-2xl border border-card-border">
       <div
         ref={containerRef}
-        className="h-full min-h-[420px] w-full rounded-xl overflow-hidden border border-card-border"
+        className="h-full min-h-[420px] w-full bg-surface-sunken"
       />
       {routes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="px-4 py-2.5 rounded-xl bg-background/85 backdrop-blur-sm border border-card-border text-sm text-muted flex items-center gap-2">
-            <Loader2 className="w-4 h-4 text-gold animate-spin" />
-            Finding routes…
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div
+            role="status"
+            className="flex items-center gap-2 rounded-xl border border-card-border bg-background/85 px-4 py-2.5 text-sm text-muted backdrop-blur-md"
+          >
+            <Loader2 className="w-4 h-4 text-gold animate-spin" strokeWidth={2} />
+            Finding routes
           </div>
         </div>
       )}

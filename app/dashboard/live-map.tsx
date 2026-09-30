@@ -6,7 +6,6 @@ import {
   Crosshair,
   Loader2,
   MapPin,
-  Satellite,
   TriangleAlert,
 } from "lucide-react";
 import {
@@ -28,7 +27,6 @@ export default function LiveMap() {
     lat: number;
     lng: number;
     accuracy?: number;
-    timestamp: number;
   } | null>(null);
   const [permission, setPermission] = useState<
     "unknown" | "granted" | "denied" | "unsupported"
@@ -96,15 +94,11 @@ export default function LiveMap() {
         .setLngLat(FALLBACK)
         .addTo(map);
 
-      const applyPosition = (
-        lat: number,
-        lng: number,
-        accuracy?: number,
-      ) => {
+      const applyPosition = (lat: number, lng: number, accuracy?: number) => {
         map?.easeTo({ center: [lng, lat], essential: false });
         marker?.setLngLat([lng, lat]);
         if (!cancelled) {
-          setPosition({ lat, lng, accuracy, timestamp: Date.now() });
+          setPosition({ lat, lng, accuracy });
           setPermission("granted");
         }
       };
@@ -128,87 +122,93 @@ export default function LiveMap() {
     return cleanup;
   }, []);
 
-  if (status === "no-token") {
+  /* Empty and error states are first-class here, because a missing token is
+     the single most likely way a reviewer first runs this app. */
+  if (status === "no-token" || status === "error") {
+    const noToken = status === "no-token";
     return (
-      <div className="h-[420px] rounded-xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
+      <div className="flex h-[420px] flex-col items-center justify-center rounded-2xl border border-card-border bg-card p-8 text-center">
         <div className="max-w-sm">
-          <TriangleAlert className="w-8 h-8 text-gold mx-auto mb-3" />
-          <h3 className="font-semibold mb-1">Mapbox token missing</h3>
-          <p className="text-sm text-muted">
-            Add your Mapbox public token to{" "}
-            <code className="text-gold">.env.local</code> as{" "}
-            <code className="text-gold">
-              NEXT_PUBLIC_MAPBOX_TOKEN=pk.xxxx
-            </code>{" "}
-            to see live location.
+          <TriangleAlert
+            className={
+              "mx-auto mb-3 w-7 h-7 " + (noToken ? "text-gold" : "text-danger-text")
+            }
+            strokeWidth={1.75}
+          />
+          <h3 className="font-medium">
+            {noToken ? "Mapbox token missing" : "Map could not load"}
+          </h3>
+          <p className="mt-2 text-sm text-muted leading-relaxed">
+            {noToken ? (
+              <>
+                Add your public token to{" "}
+                <code className="font-mono text-xs text-foreground">
+                  .env.local
+                </code>{" "}
+                as{" "}
+                <code className="font-mono text-xs text-foreground">
+                  NEXT_PUBLIC_MAPBOX_TOKEN
+                </code>{" "}
+                to show live location. Everything else on this screen works
+                without it.
+              </>
+            ) : (
+              "Check that the token is valid and has the map styles enabled."
+            )}
           </p>
         </div>
       </div>
     );
   }
 
-  if (status === "error") {
-    return (
-      <div className="h-[420px] rounded-xl bg-card border border-card-border flex items-center justify-center p-8 text-center">
-        <TriangleAlert className="w-8 h-8 text-danger mx-auto mb-3" />
-        <p className="text-sm text-muted">
-          Could not load the map. Check that your Mapbox token is valid and has
-          the map styles enabled.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-xl overflow-hidden border border-card-border relative">
-      <div ref={containerRef} className="h-[420px] w-full bg-card" />
+    <div className="relative overflow-hidden rounded-2xl border border-card-border">
+      <div ref={containerRef} className="h-[420px] w-full bg-surface-sunken" />
 
-      {/* Overlay chip */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/85 backdrop-blur-sm border border-card-border text-xs font-medium">
-          <MapPin className="w-3.5 h-3.5 text-gold" />
-          Live Location
-          {status === "ready" ? (
-            <span className="w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
-          ) : (
-            <Loader2 className="w-3 h-3 text-muted animate-spin" />
-          )}
-        </div>
-        {permission === "denied" && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger/20 backdrop-blur-sm border border-danger/30 text-xs text-danger">
-            <TriangleAlert className="w-3.5 h-3.5" />
-            Location blocked — showing default view
+      {/* Two overlays, not four. The previous version stacked a live chip, a
+          style-attribution badge reading "Dark satellite streets · Mapbox",
+          and a coordinate card, which competed with each other and covered a
+          third of the map. Mapbox already renders its own attribution. */}
+      <div className="pointer-events-none absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3">
+        {position ? (
+          <div className="rounded-xl border border-card-border bg-background/85 px-3.5 py-2.5 backdrop-blur-md">
+            <div className="flex items-center gap-1.5 text-xs text-muted">
+              <Crosshair className="w-3.5 h-3.5 text-gold" strokeWidth={2} />
+              Your position
+              {position.accuracy ? (
+                <span className="text-dim">
+                  {` within ${Math.round(position.accuracy)}m`}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-1 font-mono text-sm tabular-nums">
+              {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
+            </div>
+          </div>
+        ) : (
+          <div
+            role="status"
+            className="flex items-center gap-2 rounded-xl border border-card-border bg-background/85 px-3.5 py-2.5 text-xs text-muted backdrop-blur-md"
+          >
+            <Loader2 className="w-3.5 h-3.5 text-gold animate-spin" strokeWidth={2} />
+            Finding your position
           </div>
         )}
-      </div>
 
-      {/* Coordinate card */}
-      {position ? (
-        <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-10 px-4 py-3 rounded-xl bg-background/85 backdrop-blur-sm border border-card-border">
-          <div className="text-xs text-muted flex items-center gap-1.5 mb-1">
-            <Crosshair className="w-3.5 h-3.5 text-gold" />
-            Your live position{" "}
-            {position.accuracy ? (
-              <span className="text-muted/60">
-                · ±{Math.round(position.accuracy)}m accuracy
-              </span>
-            ) : null}
+        {permission === "denied" ? (
+          <div
+            role="status"
+            className="flex items-center gap-1.5 rounded-xl border border-danger-edge bg-background/85 px-3 py-2 text-xs text-danger-text backdrop-blur-md"
+          >
+            <TriangleAlert className="w-3.5 h-3.5" strokeWidth={2} />
+            Location blocked
           </div>
-          <div className="font-mono text-sm">
-            {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
+        ) : (
+          <div className="flex items-center gap-1.5 rounded-xl border border-card-border bg-background/85 px-3 py-2 text-xs text-muted backdrop-blur-md">
+            <MapPin className="w-3.5 h-3.5 text-gold" strokeWidth={2} />
+            {status === "ready" ? "Live" : "Connecting"}
           </div>
-        </div>
-      ) : (
-        <div className="absolute bottom-4 left-4 z-10 px-4 py-2.5 rounded-xl bg-background/85 backdrop-blur-sm border border-card-border text-xs text-muted flex items-center gap-2">
-          <Loader2 className="w-3.5 h-3.5 text-gold animate-spin" />
-          Fetching your location…
-        </div>
-      )}
-
-      {/* Style badge */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/85 backdrop-blur-sm border border-card-border text-xs text-muted">
-        <Satellite className="w-3.5 h-3.5 text-gold" />
-        Dark satellite streets · Mapbox
+        )}
       </div>
     </div>
   );

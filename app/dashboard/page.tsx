@@ -1,18 +1,14 @@
 import {
   Activity,
-  Award,
+  AudioLines,
   ChevronRight,
-  Clock,
-  HeartPulse,
-  Map,
+  LogOut,
   MapPin,
   Navigation,
-  Phone,
+  Radar,
   Shield,
   ShieldCheck,
-  TrendingUp,
   Users,
-  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import LiveMap from "./live-map";
@@ -21,319 +17,358 @@ import TrustedNetwork from "./trusted-network";
 import SiteHeader from "@/app/components/site-header";
 import {
   ButtonLink,
-  Card,
+  Divider,
+  LiveDot,
+  Metric,
+  Panel,
   SectionHeading,
-  StatusStrip,
 } from "@/app/components/ui";
+
+/* Sample data. This dashboard has no backend yet, so every figure below is
+   illustrative. It is labelled as sample in the footer rather than presented
+   as a real account's history. Replace with live reads when wired up. */
+const ACCOUNT_NAME = "Ananya Rao";
 
 const stats = [
   {
-    icon: TrendingUp,
     label: "Journeys completed",
     value: "12",
-    sub: "this month",
-    accent: "text-gold",
-    tint: "bg-gold-dim border-gold/20",
+    sub: "in the last 30 days",
   },
   {
-    icon: Users,
     label: "Protection network",
     value: "5",
     sub: "active contacts",
-    accent: "text-gold",
-    tint: "bg-gold-dim border-gold/20",
   },
   {
-    icon: ShieldCheck,
     label: "Alerts resolved",
     value: "3",
-    sub: "last 30 days",
-    accent: "text-safe",
-    tint: "bg-safe-dim border-safe/20",
+    sub: "in the last 30 days",
+    tone: "safe" as const,
   },
   {
-    icon: HeartPulse,
     label: "Safety score",
-    value: "96",
+    value: "94",
     sub: "out of 100",
-    accent: "text-gold",
-    tint: "bg-gold-dim border-gold/20",
   },
 ];
 
+/* Four cells, laid out 2 + 1 / 1 + 2 on a three-column grid. The previous
+   build was four identical equal-width cards, which is the banned feature-row
+   pattern and carried no hierarchy between "start a journey" and the rest. */
 const quickActions = [
   {
     icon: Navigation,
-    label: "Start Journey",
-    desc: "Begin safe travel",
+    label: "Start a safe journey",
+    body: "Pick a destination and get routed toward the busier path.",
     href: "/journey",
-    primary: true,
+    span: "lg:col-span-2",
+    featured: true,
   },
-  { icon: Map, label: "Safety Map", desc: "View risk zones", href: "#live-map" },
+  {
+    icon: Radar,
+    label: "Safety map",
+    body: "See risk zones around you.",
+    href: "#live-map",
+    span: "lg:col-span-1",
+  },
   {
     icon: Users,
-    label: "Emergency Contacts",
-    desc: "Manage your circle",
+    label: "Emergency contacts",
+    body: "Manage the three people we call.",
     href: "#trusted-network",
+    span: "lg:col-span-1",
   },
   {
     icon: Shield,
-    label: "Command Center",
-    desc: "Monitor incidents",
+    label: "Command center",
+    body: "Review incidents and live monitoring.",
     href: "/journey",
+    span: "lg:col-span-2",
   },
 ];
 
 const recentJourneys = [
   {
     from: "Home",
-    to: "Koramangala, Bengaluru",
-    date: "Today · 9:40 PM",
-    status: "Completed",
-    safe: true,
+    to: "Koramangala",
+    date: "Today, 9:40 PM",
     duration: "22 min",
   },
   {
     from: "Office",
-    to: "Indiranagar, Bengaluru",
-    date: "Yesterday · 10:15 PM",
-    status: "Completed",
-    safe: true,
+    to: "Indiranagar",
+    date: "Yesterday, 10:15 PM",
     duration: "18 min",
   },
   {
     from: "Home",
-    to: "HSR Layout, Bengaluru",
-    date: "Sep 20 · 11:05 PM",
-    status: "Completed",
-    safe: true,
+    to: "HSR Layout",
+    date: "20 Sep, 11:05 PM",
     duration: "26 min",
   },
 ];
 
 const tips = [
-  "Share your live journey with a trusted contact before night travel.",
-  "Keep your emergency PIN updated in your profile.",
+  "Share a live journey with a contact before you set out at night.",
+  "Keep your emergency PIN current in your profile.",
   'Say "SAFEGRID SOS" hands-free to raise an alert mid-journey.',
-  "Mark high-risk zones on the map after visiting unfamiliar areas.",
+  "Mark unfamiliar stretches as high risk after you have driven them.",
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background bg-mesh-warm relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col bg-background">
       <SetupGuard />
 
       <SiteHeader>
-        <span className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-safe-dim border border-safe/20 text-xs text-safe font-medium">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
-          Monitoring Active
-        </span>
-        <span className="text-sm text-muted hidden md:block">
-          Welcome, Demo User
+        <ChipLive />
+        <span className="hidden md:block text-sm text-muted">
+          {ACCOUNT_NAME}
         </span>
         <Link
           href="/login"
-          className="p-2 rounded-lg hover:bg-card transition-colors text-muted hover:text-foreground"
+          className="flex items-center justify-center w-11 h-11 rounded-lg text-muted transition-colors hover:bg-surface-raised hover:text-foreground"
           title="Log out"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4" strokeWidth={1.75} />
+          <span className="sr-only">Log out</span>
         </Link>
       </SiteHeader>
 
-      {/* Main Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        {/* Safety Status Hero */}
-        <Card className="mb-8 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5 justify-between">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-6 py-8">
+        {/* Status. Elevation is doing real work here: this is the one thing the
+            user opened the app to find. */}
+        <Panel className="p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-safe/10 border border-safe/20 flex items-center justify-center">
-                <Shield className="w-8 h-8 text-safe" />
+              <div className="w-12 h-12 rounded-xl bg-safe-dim border border-safe-edge flex items-center justify-center shrink-0">
+                <Shield className="w-6 h-6 text-safe-text" strokeWidth={1.75} />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold mb-1 tracking-tight">
-                  You&apos;re Safe
-                  <span className="ml-3 align-middle inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-safe/10 border border-safe/20 text-xs text-safe font-medium">
-                    <MapPin className="w-3 h-3" /> Bengaluru, IN
+              <div className="min-w-0">
+                <h1 className="text-xl font-semibold tracking-[-0.02em] flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  You are safe
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-card-border px-2.5 py-0.5 text-xs font-normal text-muted">
+                    <MapPin className="w-3 h-3 text-gold" strokeWidth={2} />
+                    Bengaluru
                   </span>
                 </h1>
-                <p className="text-muted">
-                  No active journeys. Start a Safe Journey to begin monitoring.
+                <p className="mt-1 text-sm text-muted">
+                  No journey running. Start one to begin monitoring.
                 </p>
               </div>
             </div>
-            <ButtonLink
-              href="/journey"
-              className="shrink-0 px-6 py-3"
-            >
-              <Navigation className="w-4 h-4" />
-              Start Safe Journey
+            <ButtonLink href="/journey" className="shrink-0 px-5 py-3">
+              <Navigation className="w-4 h-4" strokeWidth={2} />
+              Start journey
             </ButtonLink>
           </div>
-        </Card>
+        </Panel>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="p-5">
-              <div
-                className={`w-10 h-10 rounded-xl border flex items-center justify-center mb-3 ${stat.tint}`}
-              >
-                <stat.icon className={`w-5 h-5 ${stat.accent}`} />
-              </div>
-              <div className="text-2xl font-bold font-mono">{stat.value}</div>
-              <div className="text-sm font-medium text-foreground">
-                {stat.label}
-              </div>
-              <div className="text-xs text-muted">{stat.sub}</div>
-            </Card>
+        {/* Figures, not containers. Four cards each holding one number was the
+            densest pocket of card soup in the previous build. */}
+        <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-y-7">
+          {stats.map((stat, i) => (
+            <div
+              key={stat.label}
+              className={
+                "px-0 lg:px-6 " +
+                (i % 2 === 0 ? "pr-5 " : "pl-5 ") +
+                (i < 2 ? "border-r border-hairline " : "") +
+                (i < 2 ? "pb-7 lg:pb-0 " : "")
+              }
+            >
+              <Metric
+                value={stat.value}
+                label={stat.label}
+                sub={stat.sub}
+                tone={stat.tone}
+              />
+            </div>
           ))}
         </div>
 
-        {/* Live Location Map */}
-        <div className="mb-8" id="live-map">
+        <div className="mt-10" id="live-map">
           <SectionHeading
-            icon={<MapPin className="w-5 h-5" />}
             action={
-              <span className="text-xs text-muted flex items-center gap-1.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-safe animate-pulse" />
+              <span className="flex items-center gap-1.5 text-xs text-muted">
+                <LiveDot />
                 Tracking active
               </span>
             }
           >
-            Live Location
+            Live location
           </SectionHeading>
           <LiveMap />
         </div>
 
-        {/* Quick Actions */}
-        <SectionHeading>Quick Actions</SectionHeading>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {quickActions.map((action) => (
-            <Link
-              key={action.label}
-              href={action.href}
-              className={`p-5 rounded-xl border transition-all group relative overflow-hidden ${
-                action.primary
-                  ? "bg-gold-dim border-gold/30 hover:border-gold/60"
-                  : "bg-card border-card-border hover:border-gold/40"
-              }`}
-            >
-              <action.icon className="w-6 h-6 mb-3 text-gold group-hover:scale-110 transition-transform" />
-              <h3 className="font-semibold mb-1">{action.label}</h3>
-              <p className="text-sm text-muted">{action.desc}</p>
-              <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 transition-all" />
-            </Link>
-          ))}
+        <div className="mt-10">
+          <SectionHeading>Go somewhere</SectionHeading>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {quickActions.map((action) => (
+              <Link
+                key={action.label}
+                href={action.href}
+                className={
+                  "group relative rounded-2xl border p-5 transition-colors duration-200 active:translate-y-px " +
+                  action.span +
+                  (action.featured
+                    ? " bg-gold-dim border-gold-edge hover:bg-gold/10"
+                    : " bg-card border-card-border hover:border-gold-edge")
+                }
+              >
+                <action.icon
+                  className={
+                    "w-5 h-5 " + (action.featured ? "text-gold" : "text-muted")
+                  }
+                  strokeWidth={1.75}
+                />
+                <h3 className="mt-3.5 font-medium">{action.label}</h3>
+                <p className="mt-1 text-sm text-muted leading-relaxed">
+                  {action.body}
+                </p>
+                <ChevronRight
+                  className="absolute right-4 top-5 w-4 h-4 text-dim opacity-0 transition-opacity group-hover:opacity-100"
+                  strokeWidth={2}
+                />
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Voice SOS Status */}
-        <StatusStrip className="mb-8">
-          Voice SOS: <span className="text-safe font-medium">Active</span> —
-          Say &quot;SAFEGRID SOS&quot; to trigger emergency
-        </StatusStrip>
+        {/* One band for "what is running right now". The previous build had a
+            Voice SOS strip and an almost-identical ambient monitoring bar
+            stacked 40px apart, saying the same thing twice. */}
+        <Panel tone="sunken" className="mt-8 px-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-x-8 gap-y-4 py-1">
+            <div className="flex items-start gap-3">
+              <AudioLines
+                className="w-4 h-4 text-gold shrink-0 mt-0.5"
+                strokeWidth={1.75}
+              />
+              <div>
+                <div className="text-sm text-foreground">Voice SOS</div>
+                <p className="mt-0.5 text-xs text-muted leading-relaxed">
+                  Say &quot;SAFEGRID SOS&quot; to alert your network without
+                  touching your phone.
+                </p>
+              </div>
+            </div>
+            <div className="sm:border-l sm:border-hairline sm:pl-8 flex items-start gap-3">
+              <Activity
+                className="w-4 h-4 text-gold shrink-0 mt-0.5"
+                strokeWidth={1.75}
+              />
+              <div>
+                <div className="text-sm text-foreground">Ambient monitoring</div>
+                <p className="mt-0.5 text-xs text-muted leading-relaxed">
+                  Position, speed and audio anomalies are checked continuously
+                  while you travel.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Panel>
 
-        {/* Recent Journeys + Safety Tips */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Recent Journeys */}
-          <Card className="p-5">
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Panel className="p-5">
             <SectionHeading
-              icon={<Clock className="w-5 h-5" />}
               action={
-                <span className="text-xs text-muted flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-safe" /> All safe
+                <span className="flex items-center gap-1.5 text-xs text-safe-text">
+                  <ShieldCheck className="w-3.5 h-3.5" strokeWidth={2} />
+                  All reached safely
                 </span>
               }
             >
-              Recent Journeys
+              Recent journeys
             </SectionHeading>
-            <ul className="space-y-3">
+            <ul className="divide-y divide-hairline">
               {recentJourneys.map((journey) => (
                 <li
                   key={journey.to}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-background border border-card-border"
+                  className="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0"
                 >
-                  <div className="flex flex-col items-center gap-1 px-1">
-                    <div className="w-2 h-2 rounded-full bg-gold" />
-                    <div className="w-px h-4 bg-card-border" />
-                    <div className="w-2 h-2 rounded-full bg-safe" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">
-                        {journey.from} → {journey.to}
-                      </span>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">
+                      {journey.from} to {journey.to}
                     </div>
-                    <p className="text-xs text-muted">
-                      {journey.date} · {journey.duration}
+                    <p className="mt-0.5 font-mono text-xs text-muted">
+                      {journey.date}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs text-safe font-medium bg-safe-dim border border-safe/20 px-2.5 py-1 rounded-full">
-                    {journey.status}
+                  <span className="shrink-0 font-mono text-xs text-muted">
+                    {journey.duration}
                   </span>
                 </li>
               ))}
             </ul>
+            <Divider className="mt-5" />
             <Link
               href="/journey"
-              className="mt-4 inline-flex items-center gap-1 text-sm text-gold hover:text-gold-hover transition-colors"
+              className="mt-1.5 -mb-2.5 inline-flex items-center gap-1 min-h-11 text-sm text-gold transition-colors hover:text-gold-hover"
             >
-              View all journeys <ChevronRight className="w-4 h-4" />
+              View all journeys
+              <ChevronRight className="w-4 h-4" strokeWidth={2} />
             </Link>
-          </Card>
+          </Panel>
 
-          {/* Safety Tips */}
-          <Card className="p-5">
-            <SectionHeading icon={<Award className="w-5 h-5" />}>
-              Safety Tips
-            </SectionHeading>
-            <ul className="space-y-3">
+          <Panel className="p-5">
+            <SectionHeading>Worth knowing</SectionHeading>
+            <ul className="divide-y divide-hairline">
               {tips.map((tip, index) => (
                 <li
                   key={tip}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-background border border-card-border"
+                  className="flex items-start gap-3 py-3.5 first:pt-0 last:pb-0"
                 >
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-gold-dim border border-gold/25 text-gold text-xs font-semibold flex items-center justify-center">
-                    {index + 1}
+                  <span
+                    className="shrink-0 mt-0.5 font-mono text-xs text-gold"
+                    aria-hidden="true"
+                  >
+                    {String(index + 1).padStart(2, "0")}
                   </span>
                   <p className="text-sm text-muted leading-relaxed">{tip}</p>
                 </li>
               ))}
             </ul>
-          </Card>
+          </Panel>
         </div>
 
-        {/* Emergency Contacts Preview */}
-        <div className="mt-4" id="trusted-network">
-          <Card className="p-5">
+        <div className="mt-6" id="trusted-network">
+          <Panel className="p-5">
             <SectionHeading
-              icon={<Phone className="w-5 h-5" />}
               action={
                 <Link
                   href="/onboarding/contacts"
-                  className="inline-flex items-center gap-1 text-sm text-gold hover:text-gold-hover transition-colors"
+                  className="-my-2.5 inline-flex items-center gap-1 min-h-11 text-sm text-gold transition-colors hover:text-gold-hover"
                 >
-                  Manage <ChevronRight className="w-4 h-4" />
+                  Manage
+                  <ChevronRight className="w-4 h-4" strokeWidth={2} />
                 </Link>
               }
             >
-              Trusted Network
+              Trusted network
             </SectionHeading>
-            <div className="grid grid-cols-1 gap-3">
-              <TrustedNetwork />
-            </div>
-          </Card>
-        </div>
-
-        {/* Live Monitoring Bar */}
-        <div className="mt-4 p-4 rounded-xl bg-gold-dim border border-gold/20 flex items-center gap-3">
-          <Activity className="w-4 h-4 text-gold" />
-          <span className="text-sm text-muted">
-            Live ambient monitoring: location, speed and audio anomalies are
-            checking continuously while you travel.
-          </span>
-          <span className="ml-auto shrink-0 h-2 w-2 rounded-full bg-gold animate-pulse" />
+            <TrustedNetwork />
+          </Panel>
         </div>
       </main>
+
+      <footer className="max-w-7xl mx-auto w-full px-5 sm:px-6 py-6">
+        <Divider className="mb-4" />
+        <p className="text-xs text-dim">
+          Sample account. Journey history, safety score and contact details on
+          this screen are illustrative.
+        </p>
+      </footer>
     </div>
+  );
+}
+
+function ChipLive() {
+  return (
+    <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-safe-edge bg-safe-dim px-3 py-1.5 text-xs font-medium text-safe-text">
+      <LiveDot />
+      Monitoring active
+    </span>
   );
 }

@@ -4,24 +4,30 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  User,
-  Phone,
   ArrowRight,
-  Loader2,
-  Users,
   CircleCheck,
+  Loader2,
+  Phone,
   TriangleAlert,
+  User,
+  Users,
 } from "lucide-react";
 import {
   EmergencyContact,
   loadContacts,
   saveContacts,
 } from "../../../lib/safegrid-store";
-import { Button, Card, Input, Pill } from "@/app/components/ui";
+import {
+  Button,
+  Input,
+  Panel,
+  SetupProgress,
+} from "@/app/components/ui";
 
 const EMPTY: EmergencyContact = { name: "", phone: "" };
-
+const SLOT_COUNT = 3;
 const RELATIONSHIPS = ["Family", "Friend", "Work", "Other"];
+const STEPS = ["Add your safety net", "Enable live location"];
 
 export default function OnboardingContactsPage() {
   const router = useRouter();
@@ -42,13 +48,14 @@ export default function OnboardingContactsPage() {
   useEffect(() => {
     const t = window.setTimeout(() => {
       const existing = loadContacts();
-      if (existing.length >= 3) {
+      if (existing.length >= SLOT_COUNT) {
         router.replace("/onboarding/location");
         return;
       }
       if (existing.length > 0) {
-        const filled = [...existing, ...Array(3).fill(EMPTY)].slice(0, 3);
-        setContacts(filled);
+        setContacts(
+          [...existing, ...Array(SLOT_COUNT).fill(EMPTY)].slice(0, SLOT_COUNT),
+        );
       }
       setLoading(false);
     }, 0);
@@ -71,135 +78,154 @@ export default function OnboardingContactsPage() {
 
     const invalid = contacts.some(
       (c) =>
-        !c.name.trim() || !c.phone.trim() || c.phone.replace(/\D/g, "").length < 10,
+        !c.name.trim() ||
+        !c.phone.trim() ||
+        c.phone.replace(/\D/g, "").length < 10,
     );
 
     if (invalid) {
       setError(
-        "Please fill in a name and a valid phone number (10+ digits) for all 3 contacts.",
+        "Every contact needs a name and a phone number of at least 10 digits.",
       );
       return;
     }
 
     setSaving(true);
     saveContacts(contacts);
-    window.setTimeout(() => {
-      router.push("/onboarding/location");
-    }, 600);
+    window.setTimeout(() => router.push("/onboarding/location"), 600);
   };
 
   if (loading) {
     return (
-      <Card glass className="flex items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 text-gold animate-spin" />
-      </Card>
+      <Panel className="flex items-center justify-center py-16">
+        <Loader2
+          className="w-6 h-6 text-gold animate-spin"
+          strokeWidth={2}
+          role="status"
+          aria-label="Loading saved contacts"
+        />
+      </Panel>
     );
   }
 
   return (
-    <Card glass className="p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <Pill>
-            <Users className="w-3.5 h-3.5" /> Step 1 of 2
-          </Pill>
-        </div>
-        <h2 className="text-3xl font-bold mb-2 tracking-tight">
-          Add your safety net
-        </h2>
-        <p className="text-muted">
-          Add 3 people SAFEGRID can alert instantly if you raise an SOS. Their
-          exact contact details are stored only on your device.
-        </p>
-      </div>
+    <div>
+      <SetupProgress current={0} steps={STEPS} />
 
-      {/* Error */}
+      <h1 className="mt-8 text-2xl font-semibold tracking-[-0.02em]">
+        Add your safety net
+      </h1>
+      <p className="mt-2 text-sm text-muted leading-relaxed">
+        Choose three people to alert if you raise an SOS. Their details are
+        stored only on this device.
+      </p>
+
       {error && (
-        <div className="mb-6 p-4 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm flex items-start gap-3">
-          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
+        <div
+          role="alert"
+          className="mt-6 rounded-xl bg-danger-dim border border-danger-edge px-4 py-3 text-sm text-danger-text flex items-start gap-2.5"
+        >
+          <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" strokeWidth={2} />
           {error}
         </div>
       )}
 
-      {/* Contacts Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {contacts.map((contact, index) => (
-          <div
-            key={index}
-            className="p-4 rounded-xl bg-background border border-card-border"
-          >
-            <div className="mb-3 space-y-2">
-              <span className="block text-xs font-semibold text-gold uppercase tracking-wider">
-                Emergency contact {index + 1}
-              </span>
-              <div className="flex gap-1.5 flex-wrap">
-                {RELATIONSHIPS.map((rel) => (
-                  <button
-                    key={rel}
-                    type="button"
-                    onClick={() =>
-                      setRelationship((prev) =>
-                        prev.map((r, i) => (i === index ? rel : r)),
-                      )
-                    }
-                    className={`px-2.5 py-1 rounded-full text-xs transition-colors ${
-                      relationship[index] === rel
-                        ? "bg-gold text-background font-semibold"
-                        : "bg-card border border-card-border text-muted hover:text-foreground"
-                    }`}
+      <form onSubmit={handleSubmit} className="mt-8">
+        {/* One panel, three hairline-separated groups. Previously three
+            separate cards stacked with a gap, which read as card soup. */}
+        <Panel className="px-5">
+          <ul className="divide-y divide-hairline">
+            {contacts.map((contact, index) => (
+              <li key={index} className="py-6 first:pt-5 last:pb-5">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex items-center justify-center w-7 h-7 rounded-full border border-gold-edge bg-gold-dim font-mono text-xs text-gold"
+                    aria-hidden="true"
                   >
-                    {rel}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    {index + 1}
+                  </span>
+                  <span className="text-sm font-medium">
+                    <span className="sr-only">Emergency contact </span>
+                    {relationship[index]}
+                  </span>
+                </div>
 
-            {/* Name */}
-            <div className="mb-3">
-              <Input
-                type="text"
-                small
-                value={contact.name}
-                onChange={(e) => updateContact(index, "name", e.target.value)}
-                placeholder={`${relationship[index]} member name`}
-                required
-                icon={<User className="w-4 h-4" />}
-              />
-            </div>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {RELATIONSHIPS.map((rel) => {
+                    const selected = relationship[index] === rel;
+                    return (
+                      <button
+                        key={rel}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() =>
+                          setRelationship((prev) =>
+                            prev.map((r, i) => (i === index ? rel : r)),
+                          )
+                        }
+                        className={
+                          selected
+                            ? "rounded-full border border-gold-edge bg-gold-dim px-3 py-1 text-xs font-medium text-gold transition-colors"
+                            : "rounded-full border border-card-border px-3 py-1 text-xs font-medium text-muted transition-colors hover:border-gold-edge hover:text-foreground"
+                        }
+                      >
+                        {rel}
+                      </button>
+                    );
+                  })}
+                </div>
 
-            {/* Phone */}
-            <Input
-              type="tel"
-              small
-              value={contact.phone}
-              onChange={(e) => updateContact(index, "phone", e.target.value)}
-              placeholder="+91 98765 43210"
-              required
-              icon={<Phone className="w-4 h-4" />}
-            />
-          </div>
-        ))}
+                <div className="mt-4 space-y-3">
+                  <Input
+                    type="text"
+                    aria-label={`${relationship[index]} contact ${index + 1} name`}
+                    value={contact.name}
+                    onChange={(e) => updateContact(index, "name", e.target.value)}
+                    placeholder="Full name"
+                    required
+                    icon={<User className="w-4 h-4" strokeWidth={1.75} />}
+                  />
+                  <Input
+                    type="tel"
+                    aria-label={`${relationship[index]} contact ${index + 1} phone`}
+                    value={contact.phone}
+                    onChange={(e) => updateContact(index, "phone", e.target.value)}
+                    placeholder="+91 98765 43210"
+                    required
+                    icon={<Phone className="w-4 h-4" strokeWidth={1.75} />}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Panel>
 
-        {/* Submit */}
-        <Button type="submit" block loading={saving}>
-          Save &amp; Continue
-          <ArrowRight className="w-4 h-4" />
+        <Button type="submit" block className="mt-6" loading={saving}>
+          Save and continue
+          <ArrowRight className="w-4 h-4" strokeWidth={2} />
         </Button>
 
         {saving && (
-          <p className="text-center text-xs text-muted flex items-center justify-center gap-1.5">
-            <CircleCheck className="w-3.5 h-3.5 text-safe" /> Contacts saved
-            locally
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-safe-text">
+            <CircleCheck className="w-3.5 h-3.5" strokeWidth={2} />
+            Contacts saved to this device
           </p>
         )}
       </form>
 
-      <p className="text-center text-sm text-muted mt-6">
-        <Link href="/login" className="text-gold hover:text-gold-hover transition-colors">
+      <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted">
+        <Users className="w-3.5 h-3.5" strokeWidth={1.75} />
+        You can change these later from the dashboard.
+      </p>
+
+      <p className="mt-4 text-center text-sm">
+        <Link
+          href="/login"
+          className="text-gold hover:text-gold-hover transition-colors"
+        >
           Back to sign in
         </Link>
       </p>
-    </Card>
+    </div>
   );
 }

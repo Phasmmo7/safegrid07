@@ -1,11 +1,12 @@
 /**
- * Single source of truth for literals that cannot read CSS custom properties —
+ * Single source of truth for literals that cannot read CSS custom properties:
  * Mapbox paint values, marker colours, canvas fills.
  * Keep in sync with the tokens in app/globals.css.
  */
 export const PALETTE = {
-  background: "#0a0e17",
-  card: "#111826",
+  background: "#080b12",
+  surfaceSunken: "#0a0e17",
+  card: "#131a27",
   gold: "#ffb300",
   orange: "#ff6d00",
   safe: "#00c853",
