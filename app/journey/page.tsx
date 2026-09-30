@@ -24,7 +24,7 @@ import {
   recommendBetterRoute,
   RouteOption,
 } from "../lib/routes";
-import { loadLocation } from "../lib/safegrid-store";
+import { addJourney, loadLocation, SavedJourney } from "../lib/safegrid-store";
 import SiteHeader from "@/app/components/site-header";
 import {
   Button,
@@ -49,6 +49,48 @@ export default function JourneyPage() {
   const [notice, setNotice] = useState("");
   const [rerouteDelta, setRerouteDelta] = useState<number | null>(null);
   const tickRef = useRef<number | null>(null);
+
+  /* History capture. Refs, not state, because the record has to be written
+     from an unmount cleanup where the state closures are already stale. */
+  const startedAtRef = useRef<number | null>(null);
+  const initialRouteRef = useRef<string>("");
+  const activeRouteRef = useRef<RouteOption | null>(null);
+  const recordedRef = useRef(false);
+  const fromRef = useRef("");
+  const toRef = useRef("");
+
+  // Only trips that actually ran get recorded, so a stray tap is not a journey.
+  const MIN_JOURNEY_MS = 5000;
+
+  const recordJourney = () => {
+    const startedAt = startedAtRef.current;
+    const route = activeRouteRef.current;
+    if (startedAt === null || recordedRef.current || !route) return;
+    if (Date.now() - startedAt < MIN_JOURNEY_MS) return;
+    recordedRef.current = true;
+
+    const entry: SavedJourney = {
+      id: `${startedAt}-${route.id}`,
+      fromLabel: fromRef.current,
+      toLabel: toRef.current,
+      routeName: route.name,
+      startedAt,
+      endedAt: Date.now(),
+      distanceKm: route.distanceKm,
+      crowdScore: route.crowdScore,
+      peoplePresent: route.peoplePresent,
+      rerouted: initialRouteRef.current !== route.id,
+    };
+    addJourney(entry);
+  };
+
+  // Leaving the page mid-trip still records, since a safety app should not
+  // lose the trip just because the user navigated away. Runs once on unmount.
+  useEffect(() => {
+    return () => {
+      recordJourney();
+    };
+  }, []);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -76,18 +118,31 @@ export default function JourneyPage() {
   const destination = DESTINATIONS.find((d) => d.id === destinationId)!;
   const activeRoute = routes.find((r) => r.id === activeId) ?? routes[0] ?? null;
 
+  useEffect(() => {
+    activeRouteRef.current = activeRoute;
+  }, [activeRoute]);
+
   const handleStart = async () => {
     setPhase("loading");
     setNotice("");
     setRerouteDelta(null);
     setProgress(0);
+    // Stamped before the fetch, not after. The trip starts when the user asks
+    // for it, so a slow directions response must not shorten the record.
+    startedAtRef.current = Date.now();
+    fromRef.current = originLabel;
+    toRef.current = destination.label;
+    recordedRef.current = false;
+
     const rs = await getJourneyRoutes(origin, destination.coords);
     setRoutes(rs);
     setActiveId(rs[0].id);
     setPhase("active");
+    initialRouteRef.current = rs[0].id;
   };
 
   const handleStop = () => {
+    recordJourney();
     setPhase("setup");
     setRoutes([]);
     setActiveId("");

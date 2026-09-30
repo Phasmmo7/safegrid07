@@ -32,6 +32,10 @@ export const DESTINATIONS: DestinationOption[] = [
 
 export const DEFAULT_ORIGIN: LngLat = [77.5946, 12.9716];
 
+// Upper bound on the live directions call, so a stalled request degrades to
+// the simulated routes instead of leaving the journey screen loading.
+const DIRECTIONS_TIMEOUT_MS = 6000;
+
 const ROUTE_COLORS = [
   PALETTE.safe,
   PALETTE.gold,
@@ -129,8 +133,14 @@ async function fetchRealRoutes(
   from: LngLat,
   to: LngLat,
 ): Promise<RouteOption[] | null> {
+  const controller = new AbortController();
+  // Directions must never be able to strand the user on "Finding routes".
+  // On a slow or dead network we fall back to the simulated set instead.
+  const timer = setTimeout(() => controller.abort(), DIRECTIONS_TIMEOUT_MS);
   try {
-    const res = await fetch(directionsUrl(from, to));
+    const res = await fetch(directionsUrl(from, to), {
+      signal: controller.signal,
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as DirectionsResponse;
     if (!data.routes || data.routes.length === 0) return null;
@@ -146,6 +156,8 @@ async function fetchRealRoutes(
     );
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

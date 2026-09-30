@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Activity,
   AudioLines,
@@ -15,6 +18,8 @@ import LiveMap from "./live-map";
 import SetupGuard from "./setup-guard";
 import TrustedNetwork from "./trusted-network";
 import SiteHeader from "@/app/components/site-header";
+import { loadJourneys, SavedJourney } from "../lib/safegrid-store";
+import { formatWhen } from "../lib/datetime";
 import {
   ButtonLink,
   Divider,
@@ -24,9 +29,10 @@ import {
   SectionHeading,
 } from "@/app/components/ui";
 
-/* Sample data. This dashboard has no backend yet, so every figure below is
-   illustrative. It is labelled as sample in the footer rather than presented
-   as a real account's history. Replace with live reads when wired up. */
+/* Most figures below are still illustrative: this dashboard has no backend.
+   Journeys are the exception, they are really recorded on this device, so
+   those numbers and the recent list are read from storage. Labelled as sample
+   in the footer. Replace the rest with live reads when wired up. */
 const ACCOUNT_NAME = "Ananya Rao";
 
 const stats = [
@@ -88,27 +94,6 @@ const quickActions = [
   },
 ];
 
-const recentJourneys = [
-  {
-    from: "Home",
-    to: "Koramangala",
-    date: "Today, 9:40 PM",
-    duration: "22 min",
-  },
-  {
-    from: "Office",
-    to: "Indiranagar",
-    date: "Yesterday, 10:15 PM",
-    duration: "18 min",
-  },
-  {
-    from: "Home",
-    to: "HSR Layout",
-    date: "20 Sep, 11:05 PM",
-    duration: "26 min",
-  },
-];
-
 const tips = [
   "Share a live journey with a contact before you set out at night.",
   "Keep your emergency PIN current in your profile.",
@@ -117,6 +102,19 @@ const tips = [
 ];
 
 export default function DashboardPage() {
+  const [journeys, setJourneys] = useState<SavedJourney[]>([]);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setJourneys(loadJourneys()), 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  // Once a real journey exists its count is real, so the sample figure goes away.
+  const journeyStat =
+    journeys.length > 0
+      ? { value: String(journeys.length), sub: "on this device" }
+      : { value: stats[0].value, sub: stats[0].sub };
+
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
       <SetupGuard />
@@ -168,24 +166,27 @@ export default function DashboardPage() {
         {/* Figures, not containers. Four cards each holding one number was the
             densest pocket of card soup in the previous build. */}
         <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-y-7">
-          {stats.map((stat, i) => (
-            <div
-              key={stat.label}
-              className={
-                "px-0 lg:px-6 " +
-                (i % 2 === 0 ? "pr-5 " : "pl-5 ") +
-                (i < 2 ? "border-r border-hairline " : "") +
-                (i < 2 ? "pb-7 lg:pb-0 " : "")
-              }
-            >
-              <Metric
-                value={stat.value}
-                label={stat.label}
-                sub={stat.sub}
-                tone={stat.tone}
-              />
-            </div>
-          ))}
+          {stats.map((stat, i) => {
+            const shown = i === 0 ? journeyStat : stat;
+            return (
+              <div
+                key={stat.label}
+                className={
+                  "px-0 lg:px-6 " +
+                  (i % 2 === 0 ? "pr-5 " : "pl-5 ") +
+                  (i < 2 ? "border-r border-hairline " : "") +
+                  (i < 2 ? "pb-7 lg:pb-0 " : "")
+                }
+              >
+                <Metric
+                  value={shown.value}
+                  label={stat.label}
+                  sub={shown.sub}
+                  tone={stat.tone}
+                />
+              </div>
+            );
+          })}
         </div>
 
         <div className="mt-10" id="live-map">
@@ -282,29 +283,35 @@ export default function DashboardPage() {
             >
               Recent journeys
             </SectionHeading>
-            <ul className="divide-y divide-hairline">
-              {recentJourneys.map((journey) => (
-                <li
-                  key={journey.to}
-                  className="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">
-                      {journey.from} to {journey.to}
+            {journeys.length === 0 ? (
+              <p className="text-sm text-muted leading-relaxed">
+                No journeys yet. Your first one will show up here.
+              </p>
+            ) : (
+              <ul className="divide-y divide-hairline">
+                {journeys.slice(0, 3).map((journey) => (
+                  <li
+                    key={journey.id}
+                    className="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium">
+                        {journey.fromLabel} to {journey.toLabel}
+                      </div>
+                      <p className="mt-0.5 font-mono text-xs text-muted">
+                        {formatWhen(journey.startedAt)}
+                      </p>
                     </div>
-                    <p className="mt-0.5 font-mono text-xs text-muted">
-                      {journey.date}
-                    </p>
-                  </div>
-                  <span className="shrink-0 font-mono text-xs text-muted">
-                    {journey.duration}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    <span className="shrink-0 font-mono text-xs text-muted">
+                      {journey.distanceKm.toFixed(1)} km
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <Divider className="mt-5" />
             <Link
-              href="/journey"
+              href="/journey/history"
               className="mt-1.5 -mb-2.5 inline-flex items-center gap-1 min-h-11 text-sm text-gold transition-colors hover:text-gold-hover"
             >
               View all journeys
@@ -355,9 +362,10 @@ export default function DashboardPage() {
 
       <footer className="max-w-7xl mx-auto w-full px-5 sm:px-6 py-6">
         <Divider className="mb-4" />
-        <p className="text-xs text-dim">
-          Sample account. Journey history, safety score and contact details on
-          this screen are illustrative.
+        <p className="text-xs text-dim max-w-[70ch] leading-relaxed">
+          Sample account. Safety score, alerts and contact details on this
+          screen are illustrative. Journey history is real, and is read from
+          this device only.
         </p>
       </footer>
     </div>
